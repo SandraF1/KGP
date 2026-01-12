@@ -1,0 +1,18 @@
+[
+  {
+    "id": "U1",
+    "title": "Unit 1: Introduction",
+    "subunits": [
+      { "id": "U1L1", "title": "Alphabet & Pronunciation" },
+      { "id": "U1L2", "title": "Basic Grammar" }
+    ]
+  },
+  {
+    "id": "U2",
+    "title": "Unit 2: Nouns & Verbs",
+    "subunits": [
+      { "id": "U2L1", "title": "Nouns Overview" },
+      { "id": "U2L2", "title": "Verb Conjugation" }
+    ]
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "text": "Welcome to the Greek alphabet! α = alpha, β = beta, γ = gamma...",
+  "quiz": [
+    {
+      "type": "multiple-choice",
+      "question": "What is the first letter of Greek?",
+      "options": ["α", "β", "γ"],
+      "answer": "α"
+    }
+  ]
+}
