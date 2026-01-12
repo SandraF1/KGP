@@ -1,11 +1,12 @@
 {
-  "text": "Welcome to the Greek alphabet! α = alpha, β = beta, γ = gamma...",
+  "id": "U1L1",
+  "title": "Unit 1 Lesson 1",
+  "text": "Welcome to Unit 1 Lesson 1: Alphabet & Pronunciation.",
   "quiz": [
     {
-      "type": "multiple-choice",
-      "question": "What is the first letter of Greek?",
-      "options": ["α", "β", "γ"],
-      "answer": "α"
+      "question": "What is the first letter of the Greek alphabet?",
+      "options": ["Alpha", "Beta", "Gamma"],
+      "correct": "Alpha"
     }
   ]
 }

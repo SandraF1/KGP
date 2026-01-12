@@ -10,9 +10,6 @@
   {
     "id": "U2",
     "title": "Unit 2: Nouns & Verbs",
-    "subunits": [
-      { "id": "U2L1", "title": "Nouns Overview" },
-      { "id": "U2L2", "title": "Verb Conjugation" }
-    ]
+    "subunits": [{ "id": "U2L1", "title": "Nouns Overview" }]
   }
 ]

@@ -1,22 +1,48 @@
-// This simulates calling your backend for answer validation
+// frontend/src/api.ts
+
+export interface LessonData {
+  id: string;
+  title: string;
+  text: string;
+  quiz?: {
+    question: string;
+    options: string[];
+  }[];
+}
+
+export interface UnitData {
+  title: string;
+  subunits: { id: string; title: string }[];
+}
+
+const BASE_URL = "http://localhost:5000/api";
+
+// Fetch all units
+export async function fetchUnits(): Promise<UnitData[]> {
+  const res = await fetch(`${BASE_URL}/units`);
+  if (!res.ok) throw new Error("Failed to fetch units");
+  return res.json();
+}
+
+// Fetch lesson content by ID
+export async function fetchLessonContent(id: string): Promise<LessonData> {
+  const res = await fetch(`${BASE_URL}/lessons/${id}`);
+  if (!res.ok) throw new Error("Failed to fetch lesson");
+  return res.json();
+}
+
+// Send answer to backend for validation
 export async function checkAnswer(
   lessonId: string,
   question: string,
   answer: string
 ): Promise<{ correct: boolean }> {
-  // TODO: replace with real API call
-  const correctAnswers: Record<string, Record<string, string>> = {
-    U1L1: { "What is the first letter of the Greek alphabet?": "Alpha" },
-    U1L2: {
-      "How do you say 'Hello' in Greek?": "Γειά",
-      "Which word means 'Goodbye'?": "Αντίο",
-    },
-    U2L1: {
-      "What is the Greek word for 'man'?": "ἀνήρ",
-      "Which article means 'the' for masculine singular nouns?": "ὁ",
-    },
-  };
+  const res = await fetch(`${BASE_URL}/check-answer`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lessonId, question, answer }),
+  });
 
-  const correct = correctAnswers[lessonId]?.[question] === answer;
-  return new Promise((resolve) => setTimeout(() => resolve({ correct }), 300)); // simulate network delay
+  if (!res.ok) throw new Error("Failed to check answer");
+  return res.json();
 }

@@ -1,69 +1,62 @@
-import React, { useState } from "react";
-import { unitsData, LessonData } from "./lessonLoader";
+import React, { useEffect, useState } from "react";
+import { fetchUnits, fetchLessonContent, checkAnswer, LessonData, UnitData } from "./api";
 import LessonViewer from "./components/LessonViewer";
 
 export default function App() {
-  // Track selected lesson
+  const [units, setUnits] = useState<UnitData[]>([]);
   const [selected, setSelected] = useState({ unit: 0, subunit: 0 });
+  const [lesson, setLesson] = useState<LessonData | null>(null);
 
-  // Expanded unit derived from selected lesson
-  const expandedUnit = selected.unit;
+  // Load units on mount
+  useEffect(() => {
+    fetchUnits().then(setUnits);
+  }, []);
 
-  // Current lesson data
-  const currentLesson: LessonData =
-    unitsData[selected.unit].subunits[selected.subunit];
+  // Load lesson whenever selection changes
+  useEffect(() => {
+    if (units.length === 0) return;
+    const lessonId = units[selected.unit].subunits[selected.subunit].id;
+    fetchLessonContent(lessonId).then(setLesson);
+  }, [units, selected]);
 
-  // Navigate to next lesson
-  const goNext = () => {
-    const { unit, subunit } = selected;
-    const currentUnit = unitsData[unit];
-
-    if (subunit < currentUnit.subunits.length - 1) {
-      setSelected({ unit, subunit: subunit + 1 });
-    } else if (unit < unitsData.length - 1) {
-      setSelected({ unit: unit + 1, subunit: 0 });
-    }
-  };
-
-  // Navigate to previous lesson
-  const goPrev = () => {
-    const { unit, subunit } = selected;
-
-    if (subunit > 0) {
-      setSelected({ unit, subunit: subunit - 1 });
-    } else if (unit > 0) {
-      const prevUnit = unitsData[unit - 1];
-      setSelected({ unit: unit - 1, subunit: prevUnit.subunits.length - 1 });
-    }
-  };
-
-  // Select lesson from sidebar
   const selectLesson = (unitIndex: number, subIndex: number) => {
     setSelected({ unit: unitIndex, subunit: subIndex });
   };
 
-  // Disable next/prev buttons at boundaries
+  const goNext = () => {
+    const { unit, subunit } = selected;
+    const currentUnit = units[unit];
+    if (subunit < currentUnit.subunits.length - 1) setSelected({ unit, subunit: subunit + 1 });
+    else if (unit < units.length - 1) setSelected({ unit: unit + 1, subunit: 0 });
+  };
+
+  const goPrev = () => {
+    const { unit, subunit } = selected;
+    if (subunit > 0) setSelected({ unit, subunit: subunit - 1 });
+    else if (unit > 0) {
+      const prevUnit = units[unit - 1];
+      setSelected({ unit: unit - 1, subunit: prevUnit.subunits.length - 1 });
+    }
+  };
+
   const isFirstLesson = selected.unit === 0 && selected.subunit === 0;
   const isLastLesson =
-    selected.unit === unitsData.length - 1 &&
-    selected.subunit === unitsData[unitsData.length - 1].subunits.length - 1;
+    selected.unit === units.length - 1 &&
+    selected.subunit === units[units.length - 1].subunits.length - 1;
+
+  if (!lesson) return <div>Loading lesson...</div>;
 
   return (
     <div>
       {/* Sidebar */}
       <div>
-        {unitsData.map((unit, uIndex) => (
+        {units.map((unit, uIndex) => (
           <div key={unit.title}>
             <div onClick={() => selectLesson(uIndex, 0)}>{unit.title}</div>
-
-            {/* Expand the unit that contains the currently selected lesson */}
-            {expandedUnit === uIndex &&
-              unit.subunits.map((_, lIndex) => (
-                <div key={lIndex} onClick={() => selectLesson(uIndex, lIndex)}>
-                  Lesson {lIndex + 1}
-                  {selected.unit === uIndex && selected.subunit === lIndex
-                    ? " (selected)"
-                    : ""}
+            {selected.unit === uIndex &&
+              unit.subunits.map((sub, sIndex) => (
+                <div key={sub.id}>
+                  {sub.title} {selected.subunit === sIndex ? "(selected)" : ""}
                 </div>
               ))}
           </div>
@@ -72,7 +65,7 @@ export default function App() {
 
       {/* Lesson Viewer */}
       <div>
-        <LessonViewer lesson={currentLesson} />
+        <LessonViewer lesson={lesson} checkAnswer={checkAnswer} />
         <div>
           <button onClick={goPrev} disabled={isFirstLesson}>
             Previous
