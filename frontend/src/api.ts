@@ -1,9 +1,22 @@
-export const fetchUnits = async () => {
-  const res = await fetch("http://localhost:5000/api/units");
-  return res.json();
-};
+// This simulates calling your backend for answer validation
+export async function checkAnswer(
+  lessonId: string,
+  question: string,
+  answer: string
+): Promise<{ correct: boolean }> {
+  // TODO: replace with real API call
+  const correctAnswers: Record<string, Record<string, string>> = {
+    U1L1: { "What is the first letter of the Greek alphabet?": "Alpha" },
+    U1L2: {
+      "How do you say 'Hello' in Greek?": "Γειά",
+      "Which word means 'Goodbye'?": "Αντίο",
+    },
+    U2L1: {
+      "What is the Greek word for 'man'?": "ἀνήρ",
+      "Which article means 'the' for masculine singular nouns?": "ὁ",
+    },
+  };
 
-export const fetchLessonContent = async (lessonId: string) => {
-  const res = await fetch(`http://localhost:5000/api/lessons/${lessonId}`);
-  return res.json();
-};
+  const correct = correctAnswers[lessonId]?.[question] === answer;
+  return new Promise((resolve) => setTimeout(() => resolve({ correct }), 300)); // simulate network delay
+}

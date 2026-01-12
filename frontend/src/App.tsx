@@ -1,14 +1,19 @@
-// src/App.tsx
 import React, { useState } from "react";
-import { unitsData } from "./lessonLoader";
+import { unitsData, LessonData } from "./lessonLoader";
+import LessonViewer from "./components/LessonViewer";
 
 export default function App() {
+  // Track selected lesson
   const [selected, setSelected] = useState({ unit: 0, subunit: 0 });
-  const [expandedUnit, setExpandedUnit] = useState(0);
 
-  const currentLessonComponent =
-    unitsData[selected.unit].subunits[selected.subunit].component;
+  // Expanded unit derived from selected lesson
+  const expandedUnit = selected.unit;
 
+  // Current lesson data
+  const currentLesson: LessonData =
+    unitsData[selected.unit].subunits[selected.subunit];
+
+  // Navigate to next lesson
   const goNext = () => {
     const { unit, subunit } = selected;
     const currentUnit = unitsData[unit];
@@ -17,55 +22,57 @@ export default function App() {
       setSelected({ unit, subunit: subunit + 1 });
     } else if (unit < unitsData.length - 1) {
       setSelected({ unit: unit + 1, subunit: 0 });
-      setExpandedUnit(unit + 1);
     }
   };
 
+  // Navigate to previous lesson
   const goPrev = () => {
     const { unit, subunit } = selected;
+
     if (subunit > 0) {
       setSelected({ unit, subunit: subunit - 1 });
     } else if (unit > 0) {
       const prevUnit = unitsData[unit - 1];
       setSelected({ unit: unit - 1, subunit: prevUnit.subunits.length - 1 });
-      setExpandedUnit(unit - 1);
     }
   };
 
-  const toggleUnit = (index: number) =>
-    setExpandedUnit(index === expandedUnit ? -1 : index);
-
+  // Select lesson from sidebar
   const selectLesson = (unitIndex: number, subIndex: number) => {
     setSelected({ unit: unitIndex, subunit: subIndex });
-    setExpandedUnit(unitIndex);
   };
 
+  // Disable next/prev buttons at boundaries
   const isFirstLesson = selected.unit === 0 && selected.subunit === 0;
   const isLastLesson =
     selected.unit === unitsData.length - 1 &&
-    selected.subunit ===
-      unitsData[unitsData.length - 1].subunits.length - 1;
-
-  const LessonComponent = currentLessonComponent;
+    selected.subunit === unitsData[unitsData.length - 1].subunits.length - 1;
 
   return (
     <div>
+      {/* Sidebar */}
       <div>
         {unitsData.map((unit, uIndex) => (
           <div key={unit.title}>
-            <div onClick={() => toggleUnit(uIndex)}>{unit.title}</div>
+            <div onClick={() => selectLesson(uIndex, 0)}>{unit.title}</div>
+
+            {/* Expand the unit that contains the currently selected lesson */}
             {expandedUnit === uIndex &&
               unit.subunits.map((_, lIndex) => (
                 <div key={lIndex} onClick={() => selectLesson(uIndex, lIndex)}>
                   Lesson {lIndex + 1}
+                  {selected.unit === uIndex && selected.subunit === lIndex
+                    ? " (selected)"
+                    : ""}
                 </div>
               ))}
           </div>
         ))}
       </div>
 
+      {/* Lesson Viewer */}
       <div>
-        <LessonComponent />
+        <LessonViewer lesson={currentLesson} />
         <div>
           <button onClick={goPrev} disabled={isFirstLesson}>
             Previous

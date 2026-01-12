@@ -1,29 +1,9 @@
-// src/lessons/U2L1.tsx
-import React, { useState } from "react";
-
-const U2L1: React.FC = () => {
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
-
-  const text = "Unit 2 Lesson 1: Basic Grammar.";
-  const quiz = [
-    { question: "What is the Greek word for 'man'?", options: ["ἀνήρ", "γυνή", "παῖς"], answer: "ἀνήρ" },
-  ];
-
-  return (
-    <div>
-      <h2>Unit 2 Lesson 1</h2>
-      <p>{text}</p>
-      {quiz.map((q, idx) => (
-        <div key={idx}>
-          <p>{q.question}</p>
-          {q.options.map(opt => (
-            <button key={opt} onClick={() => setSelectedAnswer(opt)}>{opt}</button>
-          ))}
-          {selectedAnswer && (selectedAnswer === q.answer ? "✅ Correct!" : "❌ Try again")}
-        </div>
-      ))}
-    </div>
-  );
+export const U2L1 = {
+  id: "U2L1",
+  title: "Unit 2 Lesson 1",
+  text: "Unit 2 Lesson 1: Basic Grammar and Simple Sentences.",
+  quiz: [
+    { question: "What is the Greek word for 'man'?", options: ["ἀνήρ", "γυνή", "παῖς"] },
+    { question: "Which article means 'the' for masculine singular nouns?", options: ["ὁ", "ἡ", "τό"] }
+  ]
 };
-
-export default U2L1;
