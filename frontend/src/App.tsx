@@ -1,95 +1,80 @@
-import React, { useEffect, useState, Suspense } from "react";
-import { fetchUnits } from "./api";
+// src/App.tsx
+import React, { useState } from "react";
+import { unitsData } from "./lessonLoader";
 
-// Lazy-load interactive lesson components
-const lessonsMap: { [key: string]: React.LazyExoticComponent<React.FC> } = {
-  U1L1: React.lazy(() => import("./lessons/Unit1Lesson1")),
-  /*   U1L2: React.lazy(() => import("./lessons/Unit1Lesson2")),
-  U2L1: React.lazy(() => import("./lessons/Unit2Lesson1")),
-  U2L2: React.lazy(() => import("./lessons/Unit2Lesson2")), */
-};
+export default function App() {
+  const [selected, setSelected] = useState({ unit: 0, subunit: 0 });
+  const [expandedUnit, setExpandedUnit] = useState(0);
 
-interface Subunit {
-  id: string;
-  title: string;
-}
+  const currentLessonComponent =
+    unitsData[selected.unit].subunits[selected.subunit].component;
 
-interface Unit {
-  id: string;
-  title: string;
-  subunits: Subunit[];
-}
+  const goNext = () => {
+    const { unit, subunit } = selected;
+    const currentUnit = unitsData[unit];
 
-const App: React.FC = () => {
-  const [units, setUnits] = useState<Unit[]>([]);
-  const [expandedUnit, setExpandedUnit] = useState<number | null>(0);
-  const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
+    if (subunit < currentUnit.subunits.length - 1) {
+      setSelected({ unit, subunit: subunit + 1 });
+    } else if (unit < unitsData.length - 1) {
+      setSelected({ unit: unit + 1, subunit: 0 });
+      setExpandedUnit(unit + 1);
+    }
+  };
 
-  useEffect(() => {
-    fetchUnits().then((data) => {
-      setUnits(data);
-      setSelectedLessonId(data[0].subunits[0].id);
-    });
-  }, []);
+  const goPrev = () => {
+    const { unit, subunit } = selected;
+    if (subunit > 0) {
+      setSelected({ unit, subunit: subunit - 1 });
+    } else if (unit > 0) {
+      const prevUnit = unitsData[unit - 1];
+      setSelected({ unit: unit - 1, subunit: prevUnit.subunits.length - 1 });
+      setExpandedUnit(unit - 1);
+    }
+  };
 
-  const LessonComponent = selectedLessonId
-    ? lessonsMap[selectedLessonId]
-    : null;
+  const toggleUnit = (index: number) =>
+    setExpandedUnit(index === expandedUnit ? -1 : index);
+
+  const selectLesson = (unitIndex: number, subIndex: number) => {
+    setSelected({ unit: unitIndex, subunit: subIndex });
+    setExpandedUnit(unitIndex);
+  };
+
+  const isFirstLesson = selected.unit === 0 && selected.subunit === 0;
+  const isLastLesson =
+    selected.unit === unitsData.length - 1 &&
+    selected.subunit ===
+      unitsData[unitsData.length - 1].subunits.length - 1;
+
+  const LessonComponent = currentLessonComponent;
 
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
-      {/* Sidebar */}
-      <div
-        style={{
-          width: "250px",
-          borderRight: "1px solid #ccc",
-          padding: "10px",
-        }}
-      >
-        {units.map((unit, uIndex) => (
-          <div key={unit.id}>
-            <div
-              onClick={() =>
-                setExpandedUnit(expandedUnit === uIndex ? null : uIndex)
-              }
-              style={{
-                cursor: "pointer",
-                fontWeight: expandedUnit === uIndex ? "bold" : "normal",
-              }}
-            >
-              {unit.title} {expandedUnit === uIndex ? "▼" : "▶"}
-            </div>
-
+    <div>
+      <div>
+        {unitsData.map((unit, uIndex) => (
+          <div key={unit.title}>
+            <div onClick={() => toggleUnit(uIndex)}>{unit.title}</div>
             {expandedUnit === uIndex &&
-              unit.subunits.map((sub) => (
-                <div
-                  key={sub.id}
-                  style={{
-                    paddingLeft: "20px",
-                    cursor: "pointer",
-                    fontWeight: selectedLessonId === sub.id ? "bold" : "normal",
-                  }}
-                  onClick={() => setSelectedLessonId(sub.id)}
-                >
-                  {sub.title}
+              unit.subunits.map((_, lIndex) => (
+                <div key={lIndex} onClick={() => selectLesson(uIndex, lIndex)}>
+                  Lesson {lIndex + 1}
                 </div>
               ))}
           </div>
         ))}
       </div>
 
-      {/* Lesson content */}
-      <div style={{ flex: 1, padding: "20px", overflowY: "auto" }}>
-        {LessonComponent ? (
-          <Suspense fallback={<div>Loading lesson...</div>}>
-            <LessonComponent />
-          </Suspense>
-        ) : (
-          <p>Select a lesson</p>
-        )}
+      <div>
+        <LessonComponent />
+        <div>
+          <button onClick={goPrev} disabled={isFirstLesson}>
+            Previous
+          </button>
+          <button onClick={goNext} disabled={isLastLesson}>
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );
-};
-
-export default App;
+}
