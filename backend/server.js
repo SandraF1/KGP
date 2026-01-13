@@ -4,7 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import express from "express";
 import cors from "cors";
-import fs from "fs";
+import fs from "fs/promises"; // async fs API
 
 // Fix __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -20,9 +20,14 @@ app.use(express.json());
 // ---------------------------
 // Helpers
 // ---------------------------
-function readJSON(filePath) {
-  if (!fs.existsSync(filePath)) return null;
-  return JSON.parse(fs.readFileSync(filePath, "utf8"));
+async function readJSON(filePath) {
+  try {
+    const content = await fs.readFile(filePath, "utf8");
+    return JSON.parse(content);
+  } catch (err) {
+    if (err.code === "ENOENT") return null; // file not found
+    throw err; // rethrow other errors like invalid JSON
+  }
 }
 
 // ---------------------------
@@ -30,10 +35,10 @@ function readJSON(filePath) {
 // ---------------------------
 
 // 1️⃣ Get all units with lesson metadata
-app.get("/api/units", (req, res) => {
+app.get("/api/units", async (req, res) => {
   try {
     const unitsFile = path.join(__dirname, "data/units.json");
-    const data = readJSON(unitsFile);
+    const data = await readJSON(unitsFile);
     if (!data) return res.status(404).json({ error: "Units not found" });
     res.json(data);
   } catch (err) {
@@ -43,11 +48,11 @@ app.get("/api/units", (req, res) => {
 });
 
 // 2️⃣ Get lesson content by ID
-app.get("/api/lessons/:id", (req, res) => {
+app.get("/api/lessons/:id", async (req, res) => {
   try {
     const lessonId = req.params.id;
     const lessonFile = path.join(__dirname, "data/lessons", `${lessonId}.json`);
-    const lesson = readJSON(lessonFile);
+    const lesson = await readJSON(lessonFile);
     if (!lesson) return res.status(404).json({ error: "Lesson not found" });
     res.json(lesson);
   } catch (err) {
@@ -57,8 +62,7 @@ app.get("/api/lessons/:id", (req, res) => {
 });
 
 // 3️⃣ Check answer for a lesson quiz
-// 3️⃣ Check answer for a lesson quiz
-app.post("/api/check-answer", (req, res) => {
+app.post("/api/check-answer", async (req, res) => {
   try {
     const { lessonId, question, answer } = req.body;
     if (!lessonId || !question || !answer) {
@@ -66,7 +70,7 @@ app.post("/api/check-answer", (req, res) => {
     }
 
     const lessonFile = path.join(__dirname, "data/lessons", `${lessonId}.json`);
-    const lesson = readJSON(lessonFile);
+    const lesson = await readJSON(lessonFile);
     if (!lesson) return res.status(404).json({ error: "Lesson not found" });
 
     const quizQuestion = lesson.quiz?.find(q => q.question === question);
