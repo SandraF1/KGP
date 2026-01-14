@@ -1,11 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { fetchUnits, fetchLessonContent, checkAnswer, LessonData, UnitData } from "./api";
+import {
+  fetchUnits,
+  fetchLessonContent,
+  checkAnswer,
+  LessonData,
+  UnitData,
+} from "./api";
 import LessonViewer from "./components/LessonViewer";
+import Sidebar from "./components/Sidebar"; // import Sidebar
 
 export default function App() {
   const [units, setUnits] = useState<UnitData[]>([]);
   const [selected, setSelected] = useState({ unit: 0, subunit: 0 });
   const [lesson, setLesson] = useState<LessonData | null>(null);
+
+  // Sidebar state
+  const [expandedUnit, setExpandedUnit] = useState<number | null>(0);
 
   // Load units on mount
   useEffect(() => {
@@ -23,10 +33,15 @@ export default function App() {
     setSelected({ unit: unitIndex, subunit: subIndex });
   };
 
+  const toggleUnit = (index: number) => {
+    setExpandedUnit((prev) => (prev === index ? null : index));
+  };
+
   const goNext = () => {
     const { unit, subunit } = selected;
     const currentUnit = units[unit];
-    if (subunit < currentUnit.subunits.length - 1) setSelected({ unit, subunit: subunit + 1 });
+    if (subunit < currentUnit.subunits.length - 1)
+      setSelected({ unit, subunit: subunit + 1 });
     else if (unit < units.length - 1) setSelected({ unit: unit + 1, subunit: 0 });
   };
 
@@ -47,27 +62,21 @@ export default function App() {
   if (!lesson) return <div>Loading lesson...</div>;
 
   return (
-    <div>
+    <div style={{ display: "flex", minHeight: "100vh" }}>
       {/* Sidebar */}
-      <div>
-        {units.map((unit, uIndex) => (
-          <div key={unit.title}>
-            <div onClick={() => selectLesson(uIndex, 0)}>{unit.title}</div>
-            {selected.unit === uIndex &&
-              unit.subunits.map((sub, sIndex) => (
-                <div key={sub.id}>
-                  {sub.title} {selected.subunit === sIndex ? "(selected)" : ""}
-                </div>
-              ))}
-          </div>
-        ))}
-      </div>
+      <Sidebar
+        units={units}
+        expandedUnit={expandedUnit}
+        toggleUnit={toggleUnit}
+        selectLesson={selectLesson}
+        selected={selected}
+      />
 
-      {/* Lesson Viewer */}
-      <div>
+      {/* Lesson Viewer + Navigation */}
+      <div style={{ padding: "1rem", flex: 1 }}>
         <LessonViewer lesson={lesson} checkAnswer={checkAnswer} />
-        <div>
-          <button onClick={goPrev} disabled={isFirstLesson}>
+        <div style={{ marginTop: "1rem" }}>
+          <button onClick={goPrev} disabled={isFirstLesson} style={{ marginRight: "0.5rem" }}>
             Previous
           </button>
           <button onClick={goNext} disabled={isLastLesson}>
