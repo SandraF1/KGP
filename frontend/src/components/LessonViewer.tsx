@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { LessonData } from "../api";
+
+import { LessonData } from "../types/LessonData";
 
 interface Props {
   lesson: LessonData;
@@ -11,7 +12,9 @@ interface Props {
 }
 
 const LessonViewer: React.FC<Props> = ({ lesson, checkAnswer }) => {
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
+  const [selectedAnswers, setSelectedAnswers] = useState<
+    Record<number, string>
+  >({});
   const [results, setResults] = useState<Record<number, boolean>>({});
 
   const handleAnswer = async (qIndex: number, answer: string) => {

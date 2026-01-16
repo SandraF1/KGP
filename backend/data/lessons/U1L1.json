@@ -3,39 +3,37 @@
   "title": "Unit 1 Lesson 1",
   "text": "In the earliest manuscripts, the Greek New Testament was written in capital letters only and without punctuation. However, critical editions now use both upper and lower case, as well as punctuation. For this reason, it is important to recognise both the upper and lower case alphabet. You will also need to learn to write the lower case alphabet for the purposes of study.",
   "table": {
-    "headers": ["Letter", "Name", "Pronunciation"],
+    "headers": ["Lowercase", "Uppercase", "Name", "Pronunciation"],
     "rows": [
-      ["α", "alpha", "a as in father"],
-      ["β", "beta", "b as in ball"],
-      ["γ", "gamma", "g as in game"],
-      ["δ", "delta", "d as in dog"],
-      ["ε", "epsilon", "e as in elephant"],
-      ["ζ", "zeta", "a dz sound, as in the ending of adds"],
-      ["η", "eta", "a long e, similar to the vowel in ate"],
-      ["θ", "theta", "th as in think"],
-      ["ι", "iota", "i as in ink"],
-      ["κ", "kappa", "k as in king"],
-      ["λ", "lambda", "l as in log"],
-      ["μ", "mu", "m as in moon"],
-      ["ν", "nu", "n as in new"],
-      ["ξ", "xi", "ks as in kicks"],
-      ["ο", "omicron", "o as in orange"],
-      ["π", "pi", "p as in person"],
-      ["ρ", "rho", "r as in robot"],
-      ["σ, ς", "sigma, final sigma", "s as in song"],
-      ["τ", "tau", "t as in table"],
-      ["υ", "upsilon", "No exact English equivalent, pronounced like the German ü or vowel in 'oops'"],
-      ["φ", "phi", "ph as in phone"],
-      ["χ", "chi", "No English equivalent, pronounced ch as in the Scottish loch or the German Bach"],
-      ["ψ", "psi", "Pronounced like the ps cluster in 'upset'"],
-      ["ω", "omega", "o as in own"]
+      ["α", "Α", "alpha", "a as in father"],
+      ["β", "Β", "beta", "b as in ball"],
+      ["γ", "Γ", "gamma", "g as in game"],
+      ["δ", "Δ", "delta", "d as in dog"],
+      ["ε", "Ε", "epsilon", "e as in elephant"],
+      ["ζ", "Ζ", "zeta", "dz sound, as in the ending of adds"],
+      ["η", "Η", "eta", "long e, similar to the vowel in ate"],
+      ["θ", "Θ", "theta", "th as in think"],
+      ["ι", "Ι", "iota", "i as in ink"],
+      ["κ", "Κ", "kappa", "k as in king"],
+      ["λ", "Λ", "lambda", "l as in log"],
+      ["μ", "Μ", "mu", "m as in moon"],
+      ["ν", "Ν", "nu", "n as in new"],
+      ["ξ", "Ξ", "xi", "ks as in kicks"],
+      ["ο", "Ο", "omicron", "o as in orange"],
+      ["π", "Π", "pi", "p as in person"],
+      ["ρ", "Ρ", "rho", "r as in robot"],
+      ["σ, ς", "Σ", "sigma / final sigma", "s as in song"],
+      ["τ", "Τ", "tau", "t as in table"],
+      [
+        "υ",
+        "Υ",
+        "upsilon",
+        "no exact English equivalent; similar to German ü or vowel in 'oops'"
+      ],
+      ["φ", "Φ", "phi", "ph as in phone"],
+      ["χ", "Χ", "chi", "ch as in Scottish loch or German Bach"],
+      ["ψ", "Ψ", "psi", "ps as in upset"],
+      ["ω", "Ω", "omega", "o as in own"]
     ]
-  },
-  "quiz": [
-    {
-      "question": "What is the first letter of the Greek alphabet?",
-      "options": ["Alpha", "Beta", "Gamma"],
-      "correct": "Alpha"
-    }
-  ]
+  }
 }
