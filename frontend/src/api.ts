@@ -7,6 +7,7 @@ export interface LessonData {
   quiz?: {
     question: string;
     options: string[];
+     answer: string;
   }[];
 }
 
