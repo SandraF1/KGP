@@ -1,8 +1,0 @@
-export const U1L1 = {
-  id: "U1L1",
-  title: "Unit 1 Lesson 1",
-  text: "Welcome to Unit 1 Lesson 1: Alphabet & Pronunciation.",
-  quiz: [
-    { question: "What is the first letter of the Greek alphabet?", options: ["Alpha", "Beta", "Gamma"] }
-  ]
-};

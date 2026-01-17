@@ -4,6 +4,7 @@
     "title": "Unit 1: Introduction",
     "subunits": [
       { "id": "U1L1", "title": "Alphabet & Pronunciation" },
+      { "id": "U1C1", "title": "Alphabet concept check" },
       { "id": "U1L2", "title": "Basic Grammar" }
     ]
   },
