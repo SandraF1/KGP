@@ -1,0 +1,24 @@
+{
+  "id": "U1C2",
+  "title": "Unit 1 Concept Check 2 Ordering the alphabet",
+  "content": [
+    {
+      "type": "paragraph",
+      "text": "The Greek alphabet consists of 24 letters, each with a fixed order."
+    },
+    {
+      "type": "paragraph",
+      "text": "In this exercise, you will practice typing the correct number for each letter according to its position in the alphabet. Hint: Alpha = 1, Beta = 2, Gamma = 3, etc."
+    },
+    {
+      "type": "alphabetQuiz",
+      "letters": [
+        "α", "β", "γ", "δ", "ε", "ζ", "η", "θ",
+        "ι", "κ", "λ", "μ", "ν", "ξ", "ο", "π",
+        "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω"
+      ],
+      "numItems": 7,
+      "instructions": "Type the correct position number for each letter."
+    }
+  ]
+}

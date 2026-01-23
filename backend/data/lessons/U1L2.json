@@ -1,0 +1,24 @@
+{
+  "id": "U1L2",
+  "title": "Unit 1 Lesson 2 Diphthongs",
+  "content": [
+    {
+      "type": "paragraph",
+      "text": "Diphthongs are vowel combinations considered a single sound. There are eight Koine Greek diphthongs, presented in the chart below with their Erasmian pronunciation. On occasions where the vowels are meant to be pronounced separately instead of as one sound, the second vowel is marked with a diaeresis: προϊστάμενος"
+    },
+    {
+      "type": "table",
+      "headers": ["Vowel", "Pronunciation"],
+      "rows": [
+        ["αι", "aisle"],
+        ["ει", "eight"],
+        ["οι", "oil"],
+        ["υι", "suite"],
+        ["αυ", "how"],
+        ["ευ", "No English equivalent, like eh + ooh in 'bet you'"],
+        ["ηυ", "No English equivalent, like ey + ooh in 'hey you'"],
+        ["ου", "food"]
+      ]
+    }
+  ]
+}

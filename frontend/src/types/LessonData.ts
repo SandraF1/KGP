@@ -1,30 +1,51 @@
 // src/types/LessonData.ts
-
-// Table structure
 export interface LessonTable {
-  headers: string[];      // Column headers
-  rows: string[][];       // Each row is an array of strings
+  headers: string[];
+  rows: string[][];
 }
 
-// Quiz structure
 export interface QuizItem {
   question: string;
   options: string[];
   answer: string;
 }
 
-// Concept check item (e.g., Greek letter + name)
 export interface ConceptCheckItem {
   letter: string;
   name: string;
 }
 
-// Main lesson type
+export interface ParagraphBlock {
+  type: "paragraph";
+  text: string;
+}
+
+export interface ExampleBlock {
+  type: "example";
+  text: string;
+}
+
+export interface TableBlock {
+  type: "table" | "hiddenTable";
+  headers: string[];
+  rows: string[][];
+}
+
+export interface AlphabetQuizBlock {
+  type: "alphabetQuiz";
+  letters: string[];
+  numItems: number;
+  instructions?: string;
+}
+
+export type ContentBlock =
+  | ParagraphBlock
+  | ExampleBlock
+  | TableBlock
+  | AlphabetQuizBlock;
+
 export interface LessonData {
-  id: string;                       // Unique lesson ID
-  title: string;                    // Lesson title
-  text: string;                     // Lesson text/content
-  table?: LessonTable;              // Optional table
-  quiz?: QuizItem[];                // Optional quiz (multiple choice)
-  items?: ConceptCheckItem[];       // Optional concept-check items (for U1C1 style)
+  id: string;
+  title: string;
+  content?: ContentBlock[];
 }

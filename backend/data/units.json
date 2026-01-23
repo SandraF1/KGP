@@ -4,8 +4,9 @@
     "title": "Unit 1: Introduction",
     "subunits": [
       { "id": "U1L1", "title": "Alphabet & Pronunciation" },
-      { "id": "U1C1", "title": "Alphabet concept check" },
-      { "id": "U1L2", "title": "Basic Grammar" }
+      { "id": "U1C1", "title": "Alphabet naming concept check" },
+       { "id": "U1C2", "title": "Alphabet ordering concept check" },
+      { "id": "U1L2", "title": "Diphthongs" }
     ]
   },
   {
