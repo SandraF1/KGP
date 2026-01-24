@@ -1,0 +1,38 @@
+{
+  "id": "U1L4",
+  "title": "Unit 1 Lesson 4 Syllabification",
+  "content": [
+    {
+      "type": "paragraph",
+      "text": "To syllabify, each syllable must take one vowel. Consonant clusters are important to recognise because they affect syllabification."
+    },
+    {
+      "type": "paragraph",
+      "text": "Double consonants are separated, with one of them ending a syllable and the other opening a syllable."
+    },
+    {
+      "type": "paragraph",
+      "text": "πάτταλος = πάτ-τα-λος (double consonants split)"
+    },
+    {
+      "type": "paragraph",
+      "text": "However, some consonant clusters are not separated and belong together in one syllable. To check if a pair of consonants is a legitimate single cluster, check the dictionary and see if any words begin with that pair of consonants. Note also that not every cluster pronounced as one sound can be found at the start of words in the dictionary.  In these cases, experience and intuition will be your guide."
+    },
+    {
+      "type": "paragraph",
+      "text": "σχολείο = σχο-λείο (single consonant cluster with sigma and chi pronounced as one sound, here beginning the word and therfore identified as a single unit)"
+    },
+    {
+      "type": "paragraph",
+      "text": "ἄνθρωπος = ἄν-θρω-πος (single consonant cluster with theta and rho treated as one sound, occurring here in the middle of a word)"
+    },
+    {
+      "type": "paragraph",
+      "text": "In addition, Greek syllables will start with a consonant rather than a vowel, if possible."
+    },
+    {
+      "type": "paragraph",
+      "text": "λόγος = λό-γος (second consonant gamma opens the second syllable, as Greek words prefer to start syllables with consonants, where possible)"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "id": "U1L5",
+  "title": "Unit 1 Lesson 5 Breathing Marks",
+  "content": [
+    {
+      "type": "paragraph",
+      "text": "Breathing marks are found over initial vowels. A smooth breathing mark has no sound and the word will be pronounced beginning simply with the sound of the vowel or diphthong."
+    },
+    {
+      "type": "paragraph",
+      "text": "An apparent exception is that an initial iota followed by another vowel is pronounced with a 'y' sound, as in the Greek name of Jesus, Ἰησοῦς.  However, this is because the iota is followed by another vowel and they do not form a diphthong, not because of the breathing mark."
+    },
+    {
+      "type": "paragraph",
+      "text": "A rough breathing mark is pronounced with an h sound. The one exception to this is that a rough breathing mark can also occur before a rho, but is not pronounced with an h sound before the r sound of the rho."
+    },
+    {
+      "type": "table",
+      "headers": ["Word", "Breathing", "Pronunciation"],
+      "rows": [
+        [
+          "ἀγρός",
+          "Smooth breathing over initial vowel",
+          "No H sound; word starts with the vowel sound"
+        ],
+        [
+          "Ἰησοῦς",
+          "Smooth breathing over initial iota",
+          "Word starts with a 'y' sound"
+        ],
+        [
+          "ἁγνός",
+          "Rough breathing over initial vowel",
+          "Starts with an H sound"
+        ],
+        [
+          "ῥῆμα",
+          "Rough breathing over a rho",
+          "Exception: the H sound is not pronounced; the word begins with an R sound"
+        ]
+      ]
+    }
+  ]
+}

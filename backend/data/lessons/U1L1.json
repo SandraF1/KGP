@@ -37,7 +37,12 @@
         ["ρ", "Ρ", "rho", "r as in robot"],
         ["σ, ς", "Σ", "sigma / final sigma", "s as in song"],
         ["τ", "Τ", "tau", "t as in table"],
-        ["υ", "Υ", "upsilon", "no exact English equivalent; similar to German ü or vowel in 'oops'"],
+        [
+          "υ",
+          "Υ",
+          "upsilon",
+          "no exact English equivalent; similar to German ü or vowel in 'oops'"
+        ],
         ["φ", "Φ", "phi", "ph as in phone"],
         ["χ", "Χ", "chi", "ch as in Scottish loch or German Bach"],
         ["ψ", "Ψ", "psi", "ps as in upset"],

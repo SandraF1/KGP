@@ -1,0 +1,19 @@
+{
+  "id": "U1L6",
+  "title": "Unit 1 Lesson 6 Accents",
+  "content": [
+    {
+      "type": "paragraph",
+      "text": "Finally, you may notice that there are sometimes small marks over the syllables in Greek. Greek was originally a tonal language and these marks indicated pitch. They are called accent marks. These tones no longer indicate pitch, but they do indicate where the stress lies. For example, in English we say 'hel–LO' and not 'HEL–lo'. The second syllable is pronounced louder and stronger, indicating that it is a stressed syllable. In Greek, accent marks are useful for distinguishing between forms that are otherwise identical. These will be pointed out as we go along. You do not need to write the accent marks on the syllables, but you do need to say them with the right stress. The names of the accent marks are as follows:"
+    },
+    {
+      "type": "table",
+      "headers": ["Accent mark", "Name", "Description", "Example word"],
+      "rows": [
+        ["ό", "Acute", "A rising mark, originally indicating a rising tone", "ὅρος (boundary)"],
+        ["ὸ", "Grave", "A falling mark, originally indicating a falling tone", "ἀγρός (field)"],
+        ["ῶ", "Circumflex", "A curly mark or carat, originally indicating a tone that rose and then fell", "ἄγω (I lead)"]
+      ]
+    }
+  ]
+}

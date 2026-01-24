@@ -1,0 +1,32 @@
+{
+  "id": "U1L3",
+  "title": "Unit 1 Lesson 3 Consonant Clusters",
+  "content": [
+    {
+      "type": "paragraph",
+      "text": "Consonant clusters are different in Greek from English consonant clusters. For example, p and n are not pronounced together in English. However, in Greek, pi plus nu are regarded as one consonant cluster."
+    },
+    {
+      "type": "paragraph",
+      "text": "Note that consonant clusters with gamma have the following pronunciations:"
+    },
+    {
+      "type": "table",
+      "headers": ["Consonant cluster", "Sound", "Syllabification"],
+      "rows": [
+        ["γγ", "Like the ing in sing.", "One cluster"],
+        ["γκ", "Like the ink in sink.", "One cluster"],
+        ["γξ", "Like the inks in sinks.", "One cluster"],
+        [
+          "γχ",
+          "Not found in English, like ing in sing followed by the ch of loch.",
+          "One cluster"
+        ]
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": "Since Greek and English consonant clusters are different, one way to check if a combination of clusters is a Greek consonant cluster is to look it up in a dictionary.  Any combination of consonants that begins a Greek word is a true consonant cluster elsewhere as well."
+    }
+  ]
+}
