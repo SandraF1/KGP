@@ -1,0 +1,28 @@
+{
+  "id": "U9L10",
+  "title": "Unit 9 Lesson 10 First Declension Paradigm",
+  "content": [
+    {
+      "type": "paragraph",
+      "text": "You are now ready to memorise the first declension noun paradigm, together with the article. A paradigm is another word for a pattern. More specifically, a pattern of noun endings is called a declension — hence the term first declension paradigm."
+    },
+    {
+      "type": "paragraph",
+      "text": "Note that the article shown below is the feminine article. Remember that Greek nouns can be masculine, feminine, or neuter, and that first declension nouns are predominantly feminine."
+    },
+    {
+      "type": "paragraph",
+      "text": "There are eight endings in the first declension paradigm in total: four singular endings (one for each case) and four plural endings (one for each case)."
+    },
+    {
+      "type": "table",
+      "headers": ["Case", "Singular", "Plural"],
+      "rows": [
+        ["Nominative", "ἡ ἀρχή", "αἱ ἀρχαί"],
+        ["Accusative", "τὴν ἀρχήν", "τὰς ἀρχάς"],
+        ["Genitive", "τῆς ἀρχῆς", "τῶν ἀρχῶν"],
+        ["Dative", "τῇ ἀρχῇ", "ταῖς ἀρχαῖς"]
+      ]
+    }
+  ]
+}

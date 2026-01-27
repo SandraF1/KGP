@@ -15,7 +15,20 @@
   },
   {
     "id": "U2",
-    "title": "Unit 2: Nouns & Verbs",
-    "subunits": [{ "id": "U2L1", "title": "Nouns Overview" }]
+    "title": "Unit 2: Nouns",
+    "subunits": [
+      { "id": "U2L1", "title": "Introduction to Nouns" },
+      { "id": "U2L2", "title": "Nouns and Number" },
+      { "id": "U2L3", "title": "Nouns and Gender" },
+      { "id": "U2L4", "title": "Introduction to Case" },
+      { "id": "U2L5", "title": "Nominative Case" },
+      { "id": "U2L6", "title": "Accusative Case" },
+      { "id": "U2L7", "title": "Genitive Case" },
+      { "id": "U2L8", "title": "Dative Case" },
+      { "id": "U2L9", "title": "The Article" },
+      { "id": "U2L10", "title": "First Declension Paradigm" },
+      { "id": "U2L11", "title": "First Declension Alternative Paradigms" },
+      { "id": "U2L12", "title": "Ambiguities in the First Declension" }
+    ]
   }
 ]

@@ -1,0 +1,38 @@
+{
+  "id": "U2L11",
+  "title": "Unit 2 Lesson 11 Alternate First Declension Endings",
+  "content": [
+    {
+      "type": "paragraph",
+      "text": "Finally, there are two variations to the first declension nouns."
+    },
+    {
+      "type": "paragraph",
+      "text": "Words ending in rho, iota or epsilon will have singular nouns ending in alpha. Note that the plural nouns are unchanged."
+    },
+    {
+      "type": "table",
+      "headers": ["Case", "Singular", "Plural"],
+      "rows": [
+        ["Nominative", "ἡ χώρα", "αἱ χώραι"],
+        ["Accusative", "τὴν χώραν", "τὰς χώραις"],
+        ["Genitive", "τῆς χώρας", "τῶν χωρῶν"],
+        ["Dative", "τῇ χώρᾳ", "ταῖς χωραῖς"]
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": "Likewise, words ending in double sigma or ksi will have a hybrid pattern of endings in the singular. The nominative and accusative take alpha and the genitive and dative take eta.  Again, the plurals are unchanged."
+    },
+    {
+      "type": "table",
+      "headers": ["Case", "Singular", "Plural"],
+      "rows": [
+        ["Nominative", "ἡ δόξα", "αἱ δόξαι"],
+        ["Accusative", "τὴν δόξαν", "τὰς δόξας"],
+        ["Genitive", "τῆς δόξης", "τῶν δόξων"],
+        ["Dative", "τῇ δόξῃ", "ταῖς δόξαις"]
+      ]
+    }
+  ]
+}

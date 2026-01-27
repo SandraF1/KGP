@@ -1,10 +1,10 @@
 {
   "id": "U2L1",
-  "title": "Unit 2 Lesson 1",
-  "text": "Unit 2 Lesson 1: Basic Nouns.",
-  "quiz": [
-    { "question": "What is the Greek word for 'man'?", "options": ["ἀνήρ", "γυνή", "παῖς"], "correct": "ἀνήρ" },
-    { "question": "Which article means 'the' for masculine singular nouns?", "options": ["ὁ", "ἡ", "τό"], "correct": "ὁ" }
+  "title": "Unit 2 Lesson 1 Number, gender and case",
+  "content": [
+    {
+      "type": "paragraph",
+      "text": "Greek nouns have three properties: Number, gender and case. We will explore nouns, their properties and their English equivalents in this unit."
+    }
   ]
 }
-
