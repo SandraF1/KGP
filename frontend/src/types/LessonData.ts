@@ -1,4 +1,6 @@
 // src/types/LessonData.ts
+
+// --- Table and Quiz Types ---
 export interface LessonTable {
   headers: string[];
   rows: string[][];
@@ -15,6 +17,7 @@ export interface ConceptCheckItem {
   name: string;
 }
 
+// --- Lesson Block Types ---
 export interface ParagraphBlock {
   type: "paragraph";
   text: string;
@@ -26,7 +29,13 @@ export interface ExampleBlock {
 }
 
 export interface TableBlock {
-  type: "table" | "hiddenTable";
+  type: "table";
+  headers: string[];
+  rows: string[][];
+}
+
+export interface HiddenTableBlock {
+  type: "hiddenTable";
   headers: string[];
   rows: string[][];
 }
@@ -38,12 +47,32 @@ export interface AlphabetQuizBlock {
   instructions?: string;
 }
 
+export interface AlphabetNamingBlock {
+  type: "alphabetNaming";
+  headers: string[];
+  rows: string[][];
+}
+
+export interface TFBlock {
+  type: "tf";
+  questions: {
+    id: number;
+    text: string;
+    correct: boolean;
+  }[];
+}
+
+// --- Union of all block types ---
 export type ContentBlock =
   | ParagraphBlock
   | ExampleBlock
   | TableBlock
-  | AlphabetQuizBlock;
+  | HiddenTableBlock
+  | AlphabetQuizBlock
+  | AlphabetNamingBlock
+  | TFBlock;
 
+// --- Lesson Data ---
 export interface LessonData {
   id: string;
   title: string;

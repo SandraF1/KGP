@@ -1,14 +1,13 @@
 {
   "id": "U1C1",
-  "title": "Unit 1 Concept Check 1 Naming the alphabet",
+  "title": "Unit 1 Concept Check 1 Naming the Alphabet",
   "content": [
     {
       "type": "paragraph",
       "text": "Select the correct Greek name for each letter."
     },
     {
-      "type": "hiddenTable",
-      "headers": ["Letter", "Name"],
+      "type": "alphabetNaming",
       "rows": [
         ["α", "alpha"],
         ["β", "beta"],

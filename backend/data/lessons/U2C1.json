@@ -1,0 +1,45 @@
+{
+  "id": "U2C1",
+  "title": "Unit 2 Concept Check",
+  "content": [
+    {
+      "type": "paragraph",
+      "text": "Select True or False for each question:"
+    },
+    {
+      "type": "tf",
+      "questions": [
+        {
+          "id": 1,
+          "text": "Greek nouns are either singular or plural.",
+          "correct": true
+        },
+        {
+          "id": 2,
+          "text": "The nominative case is the subject of a sentence. It is the doer of the verbal action.",
+          "correct": true
+        },
+        {
+          "id": 3,
+          "text": "The accusative case is for something directly affected by the verbal action. For example, in the sentence, ‘Al gave John a gift’, the word ‘gift’ is directly affected by the verbal action.",
+          "correct": true
+        },
+        {
+          "id": 4,
+          "text": "Many Greek feminine nouns following the regular first declension pattern have hybrid endings if their last consonant is a ς or ξ. They will have case endings in alpha in the singular and eta in the plural.",
+          "correct": true
+        },
+        {
+          "id": 5,
+          "text": "Greek feminine nouns following the first declension pattern with case endings in alpha have ambiguous genitive singular and accusative plural forms, when not accompanied by the article.",
+          "correct": true
+        },
+        {
+          "id": 6,
+          "text": "The dative case is the direct object of a sentence.",
+          "correct": false
+        }
+      ]
+    }
+  ]
+}
