@@ -63,13 +63,16 @@ const AlphabetOrderingQuiz: React.FC<Props> = ({ block }) => {
   };
 
   return (
-    <section className="unit-section my-4">
+    <section>
       <h3>Alphabet Ordering Quiz</h3>
       {block.instructions && <p>{block.instructions}</p>}
       <div>
         {items.map((item, idx) => (
           <div key={idx} style={{ marginBottom: "0.5rem" }}>
-            <span style={{ fontWeight: "bold", marginRight: "0.5rem" }}>{item.letter}</span>
+            {/* Added numbering */}
+            <span style={{ fontWeight: "bold", marginRight: "0.5rem" }}>
+              {idx + 1}. {item.letter}
+            </span>
             <input
               type="number"
               min={1}
@@ -78,7 +81,9 @@ const AlphabetOrderingQuiz: React.FC<Props> = ({ block }) => {
               onChange={e => handleChange(idx, e.target.value)}
               style={{
                 borderColor: checked
-                  ? parseInt(item.userAnswer) === item.position ? "green" : "red"
+                  ? parseInt(item.userAnswer) === item.position
+                    ? "green"
+                    : "red"
                   : "#ccc",
               }}
             />

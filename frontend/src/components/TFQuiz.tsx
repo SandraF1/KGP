@@ -1,21 +1,14 @@
+// src/components/TFQuiz.tsx
 import React, { useState } from "react";
-
-export interface TFQuestion {
-  id: number;
-  text: string;
-  correct: boolean;
-}
+import { TFBlock } from "../types/LessonData";
 
 interface Props {
-  block: {
-    type: "tf";
-    questions: TFQuestion[];
-  };
+  block: TFBlock;
 }
 
 const TFQuiz: React.FC<Props> = ({ block }) => {
-  const [answers, setAnswers] = useState<Record<number, boolean | "">>(
-    Object.fromEntries(block.questions.map(q => [q.id, ""]))
+  const [answers, setAnswers] = useState<Record<number, boolean | null>>(
+    () => Object.fromEntries(block.questions.map(q => [q.id, null]))
   );
   const [checked, setChecked] = useState(false);
   const [result, setResult] = useState("");
@@ -25,30 +18,31 @@ const TFQuiz: React.FC<Props> = ({ block }) => {
   };
 
   const handleCheck = () => {
-    const correct = block.questions.filter(q => answers[q.id] === q.correct).length;
-    setResult(`You got ${correct} out of ${block.questions.length} correct.`);
+    const correctCount = block.questions.filter(q => answers[q.id] === q.correct).length;
+    setResult(`You got ${correctCount} out of ${block.questions.length} correct.`);
     setChecked(true);
   };
 
   const handleShow = () => {
-    const shown = Object.fromEntries(block.questions.map(q => [q.id, q.correct]));
-    setAnswers(shown);
+    const correctAnswers = Object.fromEntries(block.questions.map(q => [q.id, q.correct]));
+    setAnswers(correctAnswers);
     setResult("Correct answers are filled in.");
     setChecked(true);
   };
 
   const handleClear = () => {
-    setAnswers(Object.fromEntries(block.questions.map(q => [q.id, ""])));
+    setAnswers(Object.fromEntries(block.questions.map(q => [q.id, null])));
     setResult("");
     setChecked(false);
   };
 
   return (
     <section>
-      <h3>Concept Check</h3>
-      {block.questions.map(q => (
-        <div key={q.id}>
-          <p>{q.text}</p>
+      <h3>True / False</h3>
+      {block.questions.map((q, idx) => (
+        <div key={q.id} style={{ marginBottom: "0.5rem" }}>
+          {/* Number added here */}
+          <p>{idx + 1}. {q.text}</p>
           <label>
             <input
               type="radio"
@@ -56,18 +50,16 @@ const TFQuiz: React.FC<Props> = ({ block }) => {
               value="true"
               checked={answers[q.id] === true}
               onChange={() => handleChange(q.id, true)}
-            />
-            True
+            /> True
           </label>
-          <label style={{ marginLeft: "0.5rem" }}>
+          <label style={{ marginLeft: "1rem" }}>
             <input
               type="radio"
               name={`tf-${q.id}`}
               value="false"
               checked={answers[q.id] === false}
               onChange={() => handleChange(q.id, false)}
-            />
-            False
+            /> False
           </label>
         </div>
       ))}
@@ -76,7 +68,7 @@ const TFQuiz: React.FC<Props> = ({ block }) => {
         <button onClick={handleShow} style={{ marginLeft: "0.5rem" }}>Show Answers</button>
         <button onClick={handleClear} style={{ marginLeft: "0.5rem" }}>Clear</button>
       </div>
-      {result && <div><strong>{result}</strong></div>}
+      {result && <div style={{ marginTop: "0.5rem" }}><strong>{result}</strong></div>}
     </section>
   );
 };

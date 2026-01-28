@@ -25,7 +25,9 @@ const AlphabetNamingQuiz: React.FC<Props> = ({ block }) => {
   const [result, setResult] = useState("");
 
   useEffect(() => {
-    const selectedRows = block.rows.slice(0, 7);
+    // Shuffle all rows and pick 7 random ones
+    const shuffledRows = shuffle(block.rows);
+    const selectedRows = shuffledRows.slice(0, 7);
     const allNames = block.rows.map(r => r[1]);
 
     const quizItems = selectedRows.map(row => {
@@ -73,9 +75,10 @@ const AlphabetNamingQuiz: React.FC<Props> = ({ block }) => {
       <h3>Alphabet Naming Quiz</h3>
       {items.map((item, idx) => (
         <div key={idx}>
-          <p>{item.letter}</p>
+          {/* Numbering */}
+          <p>{idx + 1}. {item.letter}</p>
           {item.options.map(opt => (
-            <label key={opt}>
+            <label key={opt} style={{ display: "block" }}>
               <input
                 type="radio"
                 name={`alphabet-naming-${idx}`}
@@ -88,12 +91,12 @@ const AlphabetNamingQuiz: React.FC<Props> = ({ block }) => {
           ))}
         </div>
       ))}
-      <div>
+      <div style={{ marginTop: "0.5rem" }}>
         <button onClick={handleCheck}>Check Answers</button>
-        <button onClick={handleShow}>Show Answers</button>
-        <button onClick={handleClear}>Clear</button>
+        <button onClick={handleShow} style={{ marginLeft: "0.5rem" }}>Show Answers</button>
+        <button onClick={handleClear} style={{ marginLeft: "0.5rem" }}>Clear</button>
       </div>
-      {result && <div><strong>{result}</strong></div>}
+      {result && <div style={{ marginTop: "0.5rem" }}><strong>{result}</strong></div>}
     </section>
   );
 };
