@@ -8,6 +8,7 @@ interface Props {
   lesson: LessonData;
   onNext?: () => void;
   onBack?: () => void;
+  checkAnswer?: (lessonId: string, question: string, answer: string) => Promise<{ correct: boolean }>;
 }
 
 const LessonViewer: React.FC<Props> = ({ lesson, onNext, onBack }) => {
