@@ -54,6 +54,31 @@ app.get("/api/lessons/:id", async (req, res) => {
     const lessonFile = path.join(__dirname, "data/lessons", `${lessonId}.json`);
     const lesson = await readJSON(lessonFile);
     if (!lesson) return res.status(404).json({ error: "Lesson not found" });
+
+    // Remove correct answers from quiz blocks before sending
+    if (lesson.content) {
+      lesson.content = lesson.content.map(block => {
+        if (block.type === "alphabetNaming") {
+          // remove correctAnswer from each row
+          return {
+            ...block,
+            rows: block.rows
+          };
+        } else if (block.type === "alphabetQuiz") {
+          return {
+            ...block,
+            letters: block.letters
+          };
+        } else if (block.type === "tf") {
+          return {
+            ...block,
+            questions: block.questions.map(q => ({ id: q.id, text: q.text }))
+          };
+        }
+        return block;
+      });
+    }
+
     res.json(lesson);
   } catch (err) {
     console.error(err);
@@ -61,11 +86,11 @@ app.get("/api/lessons/:id", async (req, res) => {
   }
 });
 
-// 3️⃣ Check answer for a lesson quiz
+// 3️⃣ Check answer for a lesson quiz securely
 app.post("/api/check-answer", async (req, res) => {
   try {
-    const { lessonId, question, answer } = req.body;
-    if (!lessonId || !question || !answer) {
+    const { lessonId, blockType, questionId, answer } = req.body;
+    if (!lessonId || !blockType || !questionId || answer === undefined) {
       return res.status(400).json({ error: "Missing parameters" });
     }
 
@@ -73,12 +98,45 @@ app.post("/api/check-answer", async (req, res) => {
     const lesson = await readJSON(lessonFile);
     if (!lesson) return res.status(404).json({ error: "Lesson not found" });
 
-    const quizQuestion = lesson.quiz?.find(q => q.question === question);
-    if (!quizQuestion) return res.status(404).json({ error: "Question not found" });
+    let isCorrect = false;
 
-    // Use the 'correct' field from JSON
-    const correctAnswer = quizQuestion.correct;
-    res.json({ correct: answer === correctAnswer });
+    switch (blockType) {
+      case "alphabetNaming":
+        const namingBlock = lesson.content.find(b => b.type === "alphabetNaming");
+        if (!namingBlock) return res.status(404).json({ error: "Quiz not found" });
+
+        const row = namingBlock.rows.find(r => r[0] === questionId);
+        if (!row) return res.status(404).json({ error: "Question not found" });
+
+        const correctAnswer = row[1];
+        isCorrect = answer === correctAnswer;
+        break;
+
+      case "alphabetQuiz":
+        const orderBlock = lesson.content.find(b => b.type === "alphabetQuiz");
+        if (!orderBlock) return res.status(404).json({ error: "Quiz not found" });
+
+        const pos = orderBlock.letters.indexOf(questionId) + 1;
+        if (pos === 0) return res.status(404).json({ error: "Question not found" });
+
+        isCorrect = parseInt(answer) === pos;
+        break;
+
+      case "tf":
+        const tfBlock = lesson.content.find(b => b.type === "tf");
+        if (!tfBlock) return res.status(404).json({ error: "Quiz not found" });
+
+        const tfQuestion = tfBlock.questions.find(q => q.id === questionId);
+        if (!tfQuestion) return res.status(404).json({ error: "Question not found" });
+
+        isCorrect = answer === tfQuestion.correct;
+        break;
+
+      default:
+        return res.status(400).json({ error: "Unknown block type" });
+    }
+
+    res.json({ correct: isCorrect });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to check answer" });
