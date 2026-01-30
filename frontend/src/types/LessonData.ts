@@ -62,6 +62,11 @@ export interface TFBlock {
   }[];
 }
 
+export interface DiphthongDragDropBlock {
+  type: "diphthongDragDrop";
+  instructions: string;
+}
+
 // --- Union of all block types ---
 export type ContentBlock =
   | ParagraphBlock
@@ -70,7 +75,10 @@ export type ContentBlock =
   | HiddenTableBlock
   | AlphabetQuizBlock
   | AlphabetNamingBlock
-  | TFBlock;
+  | TFBlock
+  | DiphthongDragDropBlock;
+
+  
 
 // --- Lesson Data ---
 export interface LessonData {

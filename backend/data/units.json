@@ -7,6 +7,7 @@
       { "id": "U1C1", "title": "Alphabet naming concept check" },
       { "id": "U1C2", "title": "Alphabet ordering concept check" },
       { "id": "U1L2", "title": "Diphthongs" },
+      { "id": "U1C3", "title": "Dipthongs concept check" },
       { "id": "U1L3", "title": "Consonant clusters" },
       { "id": "U1L4", "title": "Syllabification" },
       { "id": "U1L5", "title": "Breathing marks" },
@@ -29,7 +30,8 @@
       { "id": "U2L10", "title": "First Declension Paradigm" },
       { "id": "U2L11", "title": "First Declension Alternative Paradigms" },
       { "id": "U2L12", "title": "Ambiguities in the First Declension" },
-      { "id": "U2C1", "title": "First Declension Concept Check" }
+      { "id": "U2C1", "title": "First Declension Concept Check" },
+      { "id": "U2V1", "title": "Unit 2 vocabulary list" }
     ]
   }
 ]

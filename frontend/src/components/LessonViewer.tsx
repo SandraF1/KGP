@@ -3,6 +3,7 @@ import { LessonData, ContentBlock } from "../types/LessonData";
 import AlphabetNamingQuiz from "./AlphabetNamingQuiz";
 import TFQuiz from "./TFQuiz";
 import AlphabetOrderingQuiz from "./AlphabetOrderingQuiz";
+import DiphthongDragDrop from "../activities/unit1/DiphthongDragDrop";
 
 interface Props {
   lesson: LessonData;
@@ -69,6 +70,14 @@ const LessonViewer: React.FC<Props> = ({ lesson, onNext, onBack }) => {
                 key={idx}
                 lessonId={lesson.id}
                 block={block}
+              />
+            );
+
+          case "diphthongDragDrop":
+            return (
+              <DiphthongDragDrop
+                key={idx}
+                instructions={block.instructions}
               />
             );
 
