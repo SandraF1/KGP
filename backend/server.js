@@ -4,7 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import express from "express";
 import cors from "cors";
-import fs from "fs/promises"; // async fs API
+import fs from "fs/promises";
 
 // Fix __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -25,8 +25,8 @@ async function readJSON(filePath) {
     const content = await fs.readFile(filePath, "utf8");
     return JSON.parse(content);
   } catch (err) {
-    if (err.code === "ENOENT") return null; // file not found
-    throw err; // rethrow other errors like invalid JSON
+    if (err.code === "ENOENT") return null;
+    throw err;
   }
 }
 
@@ -34,7 +34,7 @@ async function readJSON(filePath) {
 // Routes
 // ---------------------------
 
-// 1️⃣ Get all units with lesson metadata
+// 1️⃣ Get all units
 app.get("/api/units", async (req, res) => {
   try {
     const unitsFile = path.join(__dirname, "data/units.json");
@@ -55,26 +55,13 @@ app.get("/api/lessons/:id", async (req, res) => {
     const lesson = await readJSON(lessonFile);
     if (!lesson) return res.status(404).json({ error: "Lesson not found" });
 
-    // Remove correct answers from quiz blocks before sending
+    // Remove correct answers before sending to frontend
     if (lesson.content) {
       lesson.content = lesson.content.map(block => {
-        if (block.type === "alphabetNaming") {
-          // remove correctAnswer from each row
-          return {
-            ...block,
-            rows: block.rows
-          };
-        } else if (block.type === "alphabetQuiz") {
-          return {
-            ...block,
-            letters: block.letters
-          };
-        } else if (block.type === "tf") {
-          return {
-            ...block,
-            questions: block.questions.map(q => ({ id: q.id, text: q.text }))
-          };
-        }
+        if (block.type === "alphabetNaming") return { ...block, rows: block.rows };
+        if (block.type === "alphabetQuiz") return { ...block, letters: block.letters };
+        if (block.type === "tf")
+          return { ...block, questions: block.questions.map(q => ({ id: q.id, text: q.text })) };
         return block;
       });
     }
@@ -86,11 +73,11 @@ app.get("/api/lessons/:id", async (req, res) => {
   }
 });
 
-// 3️⃣ Check answer for a lesson quiz securely
+// 3️⃣ Check answer
 app.post("/api/check-answer", async (req, res) => {
   try {
     const { lessonId, blockType, questionId, answer } = req.body;
-    if (!lessonId || !blockType || !questionId || answer === undefined) {
+    if (!lessonId || !blockType || questionId === undefined || answer === undefined) {
       return res.status(400).json({ error: "Missing parameters" });
     }
 
@@ -101,36 +88,40 @@ app.post("/api/check-answer", async (req, res) => {
     let isCorrect = false;
 
     switch (blockType) {
-      case "alphabetNaming":
+      case "alphabetNaming": {
         const namingBlock = lesson.content.find(b => b.type === "alphabetNaming");
         if (!namingBlock) return res.status(404).json({ error: "Quiz not found" });
 
-        const row = namingBlock.rows.find(r => r[0] === questionId);
+        // Use index or letter as ID consistently, trim strings
+        const row = namingBlock.rows.find(r => r[0].trim() === String(questionId).trim());
         if (!row) return res.status(404).json({ error: "Question not found" });
 
-        const correctAnswer = row[1];
-        isCorrect = answer === correctAnswer;
+        const correctAnswer = row[1].trim();
+        isCorrect = String(answer).trim() === correctAnswer;
         break;
+      }
 
-      case "alphabetQuiz":
+      case "alphabetQuiz": {
         const orderBlock = lesson.content.find(b => b.type === "alphabetQuiz");
         if (!orderBlock) return res.status(404).json({ error: "Quiz not found" });
 
-        const pos = orderBlock.letters.indexOf(questionId) + 1;
+        const pos = orderBlock.letters.indexOf(String(questionId)) + 1;
         if (pos === 0) return res.status(404).json({ error: "Question not found" });
 
         isCorrect = parseInt(answer) === pos;
         break;
+      }
 
-      case "tf":
+      case "tf": {
         const tfBlock = lesson.content.find(b => b.type === "tf");
         if (!tfBlock) return res.status(404).json({ error: "Quiz not found" });
 
-        const tfQuestion = tfBlock.questions.find(q => q.id === questionId);
+        const tfQuestion = tfBlock.questions.find(q => q.id.toString() === String(questionId));
         if (!tfQuestion) return res.status(404).json({ error: "Question not found" });
 
         isCorrect = answer === tfQuestion.correct;
         break;
+      }
 
       default:
         return res.status(400).json({ error: "Unknown block type" });

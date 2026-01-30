@@ -8,7 +8,6 @@ interface Props {
   lesson: LessonData;
   onNext?: () => void;
   onBack?: () => void;
-  checkAnswer?: (lessonId: string, question: string, answer: string) => Promise<{ correct: boolean }>;
 }
 
 const LessonViewer: React.FC<Props> = ({ lesson, onNext, onBack }) => {
@@ -28,24 +27,50 @@ const LessonViewer: React.FC<Props> = ({ lesson, onNext, onBack }) => {
             return (
               <table key={idx}>
                 <thead>
-                  <tr>{block.headers.map(h => <th key={h}>{h}</th>)}</tr>
+                  <tr>
+                    {block.headers.map(h => (
+                      <th key={h}>{h}</th>
+                    ))}
+                  </tr>
                 </thead>
                 <tbody>
                   {block.rows.map((row, rIdx) => (
-                    <tr key={rIdx}>{row.map((cell, cIdx) => <td key={cIdx}>{cell}</td>)}</tr>
+                    <tr key={rIdx}>
+                      {row.map((cell, cIdx) => (
+                        <td key={cIdx}>{cell}</td>
+                      ))}
+                    </tr>
                   ))}
                 </tbody>
               </table>
             );
 
           case "alphabetQuiz":
-            return <AlphabetOrderingQuiz key={idx} block={block} />;
+            return (
+              <AlphabetOrderingQuiz
+                key={idx}
+                lessonId={lesson.id}
+                block={block}
+              />
+            );
 
           case "alphabetNaming":
-            return <AlphabetNamingQuiz key={idx} block={block} />;
+            return (
+              <AlphabetNamingQuiz
+                key={idx}
+                lessonId={lesson.id}
+                block={block}
+              />
+            );
 
           case "tf":
-            return <TFQuiz key={idx} block={block} />;
+            return (
+              <TFQuiz
+                key={idx}
+                lessonId={lesson.id}
+                block={block}
+              />
+            );
 
           default:
             return null;
@@ -55,7 +80,11 @@ const LessonViewer: React.FC<Props> = ({ lesson, onNext, onBack }) => {
       {(onBack || onNext) && (
         <div style={{ marginTop: "1rem" }}>
           {onBack && <button onClick={onBack}>Back</button>}
-          {onNext && <button onClick={onNext} style={{ marginLeft: "0.5rem" }}>Next</button>}
+          {onNext && (
+            <button onClick={onNext} style={{ marginLeft: "0.5rem" }}>
+              Next
+            </button>
+          )}
         </div>
       )}
     </div>

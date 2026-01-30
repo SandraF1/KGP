@@ -42,7 +42,8 @@ export default function App() {
     const currentUnit = units[unit];
     if (subunit < currentUnit.subunits.length - 1)
       setSelected({ unit, subunit: subunit + 1 });
-    else if (unit < units.length - 1) setSelected({ unit: unit + 1, subunit: 0 });
+    else if (unit < units.length - 1)
+      setSelected({ unit: unit + 1, subunit: 0 });
   };
 
   const goPrev = () => {
@@ -74,9 +75,13 @@ export default function App() {
 
       {/* Lesson Viewer + Navigation */}
       <div style={{ padding: "1rem", flex: 1 }}>
-        <LessonViewer lesson={lesson} checkAnswer={checkAnswer} />
+        <LessonViewer lesson={lesson} />
         <div style={{ marginTop: "1rem" }}>
-          <button onClick={goPrev} disabled={isFirstLesson} style={{ marginRight: "0.5rem" }}>
+          <button
+            onClick={goPrev}
+            disabled={isFirstLesson}
+            style={{ marginRight: "0.5rem" }}
+          >
             Previous
           </button>
           <button onClick={goNext} disabled={isLastLesson}>

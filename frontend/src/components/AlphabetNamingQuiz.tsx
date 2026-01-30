@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { checkAnswer } from "../api"; // adjust path if needed
 
 export interface AlphabetNamingBlock {
   type: "alphabetNaming";
@@ -7,6 +8,7 @@ export interface AlphabetNamingBlock {
 }
 
 interface Props {
+  lessonId: string;
   block: AlphabetNamingBlock;
 }
 
@@ -15,26 +17,29 @@ interface ItemState {
   options: string[];
   userAnswer: string;
   correctAnswer: string;
+  feedback?: boolean;
 }
 
 const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => Math.random() - 0.5);
 
-const AlphabetNamingQuiz: React.FC<Props> = ({ block }) => {
+const AlphabetNamingQuiz: React.FC<Props> = ({ lessonId, block }) => {
   const [items, setItems] = useState<ItemState[]>([]);
   const [checked, setChecked] = useState(false);
-  const [result, setResult] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Shuffle all rows and pick 7 random ones
-    const shuffledRows = shuffle(block.rows);
-    const selectedRows = shuffledRows.slice(0, 7);
-    const allNames = block.rows.map(r => r[1]);
+    if (!block.rows || block.rows.length === 0) return;
 
-    const quizItems = selectedRows.map(row => {
-      const correctAnswer = row[1];
+    const shuffledRows = shuffle(block.rows);
+    const selectedRows = shuffledRows.slice(0, Math.min(7, block.rows.length));
+
+    const allNames = block.rows.map(r => r[1]).filter(Boolean);
+
+    const quizItems: ItemState[] = selectedRows.map(row => {
+      const correctAnswer = row[1].trim();
       const wrongOptions = shuffle(allNames.filter(n => n !== correctAnswer)).slice(0, 3);
       return {
-        letter: row[0],
+        letter: row[0].trim(),
         options: shuffle([correctAnswer, ...wrongOptions]),
         userAnswer: "",
         correctAnswer,
@@ -42,6 +47,7 @@ const AlphabetNamingQuiz: React.FC<Props> = ({ block }) => {
     });
 
     setItems(quizItems);
+    setChecked(false);
   }, [block]);
 
   const handleAnswer = (idx: number, value: string) => {
@@ -52,21 +58,43 @@ const AlphabetNamingQuiz: React.FC<Props> = ({ block }) => {
     });
   };
 
-  const handleCheck = () => {
-    const correct = items.filter(i => i.userAnswer === i.correctAnswer).length;
-    setResult(`You got ${correct} out of ${items.length} correct.`);
+  const handleCheck = async () => {
+    setLoading(true);
+    const newItems = [...items];
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (!item.userAnswer) continue;
+
+      try {
+        const res = await checkAnswer({
+          lessonId,
+          blockType: "alphabetNaming",
+          questionId: item.letter,      // ✅ send the actual letter, not index
+          answer: item.userAnswer.trim() // ✅ trim whitespace
+        });
+        newItems[i].feedback = res.correct;
+      } catch (err) {
+        console.error("Check answer failed:", err);
+      }
+    }
+
+    setItems(newItems);
     setChecked(true);
+    setLoading(false);
   };
 
   const handleShow = () => {
-    setItems(prev => prev.map(i => ({ ...i, userAnswer: i.correctAnswer })));
-    setResult("Correct answers are filled in.");
+    setItems(prev =>
+      prev.map(i => ({ ...i, userAnswer: i.correctAnswer, feedback: true }))
+    );
     setChecked(true);
   };
 
   const handleClear = () => {
-    setItems(prev => prev.map(i => ({ ...i, userAnswer: "" })));
-    setResult("");
+    setItems(prev =>
+      prev.map(i => ({ ...i, userAnswer: "", feedback: undefined }))
+    );
     setChecked(false);
   };
 
@@ -75,8 +103,10 @@ const AlphabetNamingQuiz: React.FC<Props> = ({ block }) => {
       <h3>Alphabet Naming Quiz</h3>
       {items.map((item, idx) => (
         <div key={idx}>
-          {/* Numbering */}
-          <p>{idx + 1}. {item.letter}</p>
+          <p>
+            {idx + 1}. {item.letter}{" "}
+            {item.feedback !== undefined && (item.feedback ? "✅" : "❌")}
+          </p>
           {item.options.map(opt => (
             <label key={opt} style={{ display: "block" }}>
               <input
@@ -91,12 +121,18 @@ const AlphabetNamingQuiz: React.FC<Props> = ({ block }) => {
           ))}
         </div>
       ))}
+
       <div style={{ marginTop: "0.5rem" }}>
-        <button onClick={handleCheck}>Check Answers</button>
-        <button onClick={handleShow} style={{ marginLeft: "0.5rem" }}>Show Answers</button>
-        <button onClick={handleClear} style={{ marginLeft: "0.5rem" }}>Clear</button>
+        <button onClick={handleCheck} disabled={loading}>
+          {loading ? "Checking..." : "Check Answers"}
+        </button>
+        <button onClick={handleShow} style={{ marginLeft: "0.5rem" }}>
+          Show Answers
+        </button>
+        <button onClick={handleClear} style={{ marginLeft: "0.5rem" }}>
+          Clear
+        </button>
       </div>
-      {result && <div style={{ marginTop: "0.5rem" }}><strong>{result}</strong></div>}
     </section>
   );
 };

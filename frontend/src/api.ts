@@ -4,11 +4,7 @@ export interface LessonData {
   id: string;
   title: string;
   text: string;
-  quiz?: {
-    question: string;
-    options: string[];
-     answer: string;
-  }[];
+  content?: any[]; // blocks: paragraphs, quizzes, etc.
 }
 
 export interface UnitData {
@@ -18,32 +14,56 @@ export interface UnitData {
 
 const BASE_URL = "http://localhost:5000/api";
 
+// ---------------------------
 // Fetch all units
+// ---------------------------
 export async function fetchUnits(): Promise<UnitData[]> {
   const res = await fetch(`${BASE_URL}/units`);
-  if (!res.ok) throw new Error("Failed to fetch units");
+  if (!res.ok) throw new Error(`Failed to fetch units: ${res.statusText}`);
   return res.json();
 }
 
+// ---------------------------
 // Fetch lesson content by ID
+// ---------------------------
 export async function fetchLessonContent(id: string): Promise<LessonData> {
   const res = await fetch(`${BASE_URL}/lessons/${id}`);
-  if (!res.ok) throw new Error("Failed to fetch lesson");
+  if (!res.ok) throw new Error(`Failed to fetch lesson ${id}: ${res.statusText}`);
   return res.json();
 }
 
-// Send answer to backend for validation
-export async function checkAnswer(
-  lessonId: string,
-  question: string,
-  answer: string
-): Promise<{ correct: boolean }> {
+// ---------------------------
+// Check a single quiz answer
+// ---------------------------
+export type BlockType = "alphabetNaming" | "alphabetQuiz" | "tf";
+
+export interface CheckAnswerParams {
+  lessonId: string;
+  blockType: BlockType;
+  questionId: string | number; // letter for alphabet quizzes, id for TF
+  answer: string | boolean;
+}
+
+export interface CheckAnswerResult {
+  correct: boolean;
+}
+
+export async function checkAnswer(params: CheckAnswerParams): Promise<CheckAnswerResult> {
   const res = await fetch(`${BASE_URL}/check-answer`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ lessonId, question, answer }),
+    body: JSON.stringify({
+      lessonId: params.lessonId,
+      blockType: params.blockType,
+      questionId: params.questionId.toString(), // convert IDs to string to match backend
+      answer: params.answer,
+    }),
   });
 
-  if (!res.ok) throw new Error("Failed to check answer");
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to check answer: ${res.status} ${res.statusText} - ${text}`);
+  }
+
   return res.json();
 }
