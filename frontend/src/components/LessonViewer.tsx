@@ -29,7 +29,7 @@ const LessonViewer: React.FC<Props> = ({ lesson, onNext, onBack }) => {
               <table key={idx}>
                 <thead>
                   <tr>
-                    {block.headers.map(h => (
+                    {block.headers.map((h) => (
                       <th key={h}>{h}</th>
                     ))}
                   </tr>
@@ -65,19 +65,14 @@ const LessonViewer: React.FC<Props> = ({ lesson, onNext, onBack }) => {
             );
 
           case "tf":
-            return (
-              <TFQuiz
-                key={idx}
-                lessonId={lesson.id}
-                block={block}
-              />
-            );
+            return <TFQuiz key={idx} lessonId={lesson.id} block={block} />;
 
           case "diphthongDragDrop":
             return (
               <DiphthongDragDrop
                 key={idx}
-                instructions={block.instructions}
+                instructions={block.instructions || ""}
+                lessonId={lesson.id}
               />
             );
 

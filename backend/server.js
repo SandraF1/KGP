@@ -54,7 +54,7 @@ app.get("/api/lessons/:id", async (req, res) => {
     if (!lesson) return res.status(404).json({ error: "Lesson not found" });
 
     if (lesson.content) {
-      lesson.content = lesson.content.map(block => {
+      lesson.content = lesson.content.map((block) => {
         if (block.type === "alphabetNaming")
           return { ...block, rows: block.rows };
 
@@ -64,11 +64,19 @@ app.get("/api/lessons/:id", async (req, res) => {
         if (block.type === "tf")
           return {
             ...block,
-            questions: block.questions.map(q => ({
+            questions: block.questions.map((q) => ({
               id: q.id,
-              text: q.text
-            }))
+              text: q.text,
+            })),
           };
+
+        if (
+          block.type === "interactive" &&
+          block.activity === "DiphthongDragDrop"
+        ) {
+          // remove the answers array for frontend
+          return { ...block, answers: undefined };
+        }
 
         return block;
       });
@@ -81,11 +89,16 @@ app.get("/api/lessons/:id", async (req, res) => {
   }
 });
 
-// 3️⃣ Check answer (secure)
+// 3️⃣ Check standard quiz answer (alphabetNaming, alphabetQuiz, tf)
 app.post("/api/check-answer", async (req, res) => {
   try {
     const { lessonId, blockType, questionId, answer } = req.body;
-    if (!lessonId || !blockType || questionId === undefined || answer === undefined) {
+    if (
+      !lessonId ||
+      !blockType ||
+      questionId === undefined ||
+      answer === undefined
+    ) {
       return res.status(400).json({ error: "Missing parameters" });
     }
 
@@ -97,10 +110,15 @@ app.post("/api/check-answer", async (req, res) => {
 
     switch (blockType) {
       case "alphabetNaming": {
-        const namingBlock = lesson.content.find(b => b.type === "alphabetNaming");
-        if (!namingBlock) return res.status(404).json({ error: "Quiz not found" });
+        const namingBlock = lesson.content.find(
+          (b) => b.type === "alphabetNaming",
+        );
+        if (!namingBlock)
+          return res.status(404).json({ error: "Quiz not found" });
 
-        const row = namingBlock.rows.find(r => r[0].trim() === String(questionId).trim());
+        const row = namingBlock.rows.find(
+          (r) => r[0].trim() === String(questionId).trim(),
+        );
         if (!row) return res.status(404).json({ error: "Question not found" });
 
         const correctAnswer = row[1].trim();
@@ -109,22 +127,29 @@ app.post("/api/check-answer", async (req, res) => {
       }
 
       case "alphabetQuiz": {
-        const orderBlock = lesson.content.find(b => b.type === "alphabetQuiz");
-        if (!orderBlock) return res.status(404).json({ error: "Quiz not found" });
+        const orderBlock = lesson.content.find(
+          (b) => b.type === "alphabetQuiz",
+        );
+        if (!orderBlock)
+          return res.status(404).json({ error: "Quiz not found" });
 
         const pos = orderBlock.letters.indexOf(String(questionId)) + 1;
-        if (pos === 0) return res.status(404).json({ error: "Question not found" });
+        if (pos === 0)
+          return res.status(404).json({ error: "Question not found" });
 
         isCorrect = parseInt(answer) === pos;
         break;
       }
 
       case "tf": {
-        const tfBlock = lesson.content.find(b => b.type === "tf");
+        const tfBlock = lesson.content.find((b) => b.type === "tf");
         if (!tfBlock) return res.status(404).json({ error: "Quiz not found" });
 
-        const tfQuestion = tfBlock.questions.find(q => q.id.toString() === String(questionId));
-        if (!tfQuestion) return res.status(404).json({ error: "Question not found" });
+        const tfQuestion = tfBlock.questions.find(
+          (q) => q.id.toString() === String(questionId),
+        );
+        if (!tfQuestion)
+          return res.status(404).json({ error: "Question not found" });
 
         isCorrect = answer === tfQuestion.correct;
         break;
@@ -141,7 +166,34 @@ app.post("/api/check-answer", async (req, res) => {
   }
 });
 
-// 4️⃣ Show correct answers (secure, supports ALL quiz types)
+// 4️⃣ Check DiphthongDragDrop answers (secure)
+// POST /api/check-diphthong
+// 5️⃣ Check diphthong answer (secure)
+app.post("/api/check-diphthong", async (req, res) => {
+  try {
+    const { lessonId, attempt } = req.body;
+    if (!lessonId || !attempt) {
+      return res.status(400).json({ error: "Missing parameters" });
+    }
+
+    // Optional: verify lesson exists
+    const lessonFile = path.join(__dirname, "data/lessons", `${lessonId}.json`);
+    const lesson = await readJSON(lessonFile);
+    if (!lesson) return res.status(404).json({ error: "Lesson not found" });
+
+    // ✅ Hardcoded correct diphthongs
+    const correctDiphthongs = ["αι", "ει", "οι", "υι", "αυ", "ευ", "ου", "ηυ"];
+
+    const isCorrect = correctDiphthongs.includes(attempt);
+
+    res.json({ correct: isCorrect });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to check diphthong answer" });
+  }
+});
+
+// 5️⃣ Show correct answers (secure, supports all quiz types)
 app.post("/api/show-answers", async (req, res) => {
   try {
     const { lessonId } = req.body;
@@ -156,14 +208,14 @@ app.post("/api/show-answers", async (req, res) => {
     for (const block of lesson.content) {
       if (block.type === "tf") {
         answers.tf = {};
-        block.questions.forEach(q => {
+        block.questions.forEach((q) => {
           answers.tf[q.id] = q.correct;
         });
       }
 
       if (block.type === "alphabetNaming") {
         answers.alphabetNaming = {};
-        block.rows.forEach(row => {
+        block.rows.forEach((row) => {
           answers.alphabetNaming[row[0]] = row[1];
         });
       }
@@ -174,10 +226,16 @@ app.post("/api/show-answers", async (req, res) => {
           answers.alphabetQuiz[letter] = index + 1;
         });
       }
+
+      if (
+        block.type === "interactive" &&
+        block.activity === "DiphthongDragDrop"
+      ) {
+        answers.DiphthongDragDrop = block.answers;
+      }
     }
 
     res.json({ answers });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch correct answers" });

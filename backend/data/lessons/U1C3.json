@@ -1,12 +1,15 @@
 {
   "id": "U1C3",
-  "title": "Unit 1 Concept Check 3: Greek Diphthongs",
-  "unit": 1,
-  "type": "interactive",
+  "title": "Unit 1 Concept Check 3",
   "content": [
     {
+      "type": "paragraph",
+      "text": "Practice forming diphthongs."
+    },
+    {
       "type": "diphthongDragDrop",
-      "instructions": "Drag and drop vowels to form all the true Koine Greek diphthongs."
+      "instructions": "Drag two vowels to form true Koine diphthongs.",
+      "answers": ["αι", "ει", "οι", "υι", "αυ", "ευ", "ου", "ηυ"]
     }
   ]
 }

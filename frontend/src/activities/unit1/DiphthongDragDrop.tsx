@@ -1,76 +1,119 @@
 import React, { useState } from "react";
 
-
 const VOWELS = ["α", "ε", "η", "ι", "ο", "υ"];
-const TRUE_DIPHTHONGS = ["αι", "ει", "οι", "υι", "αυ", "ευ", "ου", "ηυ"];
 
-export default function DiphthongDragDrop({
-  instructions
-}: {
+interface Props {
   instructions: string;
-}) {
-  const [currentPair, setCurrentPair] = useState<string[]>([]);
+  lessonId: string;
+}
+
+export default function DiphthongDragDrop({ instructions, lessonId }: Props) {
+  const [dragged, setDragged] = useState<string | null>(null);
+  const [firstVowel, setFirstVowel] = useState<string | null>(null);
   const [found, setFound] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<string>("");
 
-  function addVowel(vowel: string) {
-    if (currentPair.length === 2) return;
+  const onDragStart = (v: string) => setDragged(v);
 
-    const next = [...currentPair, vowel];
-    setCurrentPair(next);
+  const handleDrop = async () => {
+    if (!dragged) return;
 
-    if (next.length === 2) {
-      checkPair(next.join(""));
+    // If first vowel not yet selected, set it and wait for second
+    if (!firstVowel) {
+      setFirstVowel(dragged);
+      setDragged(null);
+      return;
     }
-  }
 
-  function checkPair(pair: string) {
-    if (TRUE_DIPHTHONGS.includes(pair) && !found.includes(pair)) {
-      setFound([...found, pair]);
-      setFeedback("✓ Correct");
-    } else {
-      setFeedback("✗ Not a diphthong");
+    const pair = firstVowel + dragged;
+
+    try {
+      const res = await fetch("http://localhost:5000/api/check-diphthong", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lessonId, attempt: pair }),
+      });
+
+      const data = await res.json();
+
+      if (data.correct && !found.includes(pair)) {
+        setFound([...found, pair]);
+        setFeedback("✓ Correct");
+      } else {
+        setFeedback("✗ Not a diphthong");
+      }
+    } catch (err) {
+      console.error(err);
+      setFeedback("Error checking diphthong");
     }
 
     setTimeout(() => {
-      setCurrentPair([]);
+      setFirstVowel(null);
+      setDragged(null);
       setFeedback("");
-    }, 800);
-  }
+    }, 1000);
+  };
 
   return (
-    <div>
-      <h2>{instructions}</h2>
+    <div style={{ marginTop: 20 }}>
+      <h3>{instructions}</h3>
 
-      <div style={{ marginBottom: 20 }}>
-        {VOWELS.map(v => (
-          <button
+      {/* Vowel palette */}
+      <div style={{ display: "flex", flexWrap: "wrap", marginBottom: 20 }}>
+        {VOWELS.map((v) => (
+          <div
             key={v}
-            onClick={() => addVowel(v)}
+            draggable
+            onDragStart={() => onDragStart(v)}
             style={{
+              width: 50,
+              height: 50,
               margin: 6,
-              padding: "10px 14px",
-              fontSize: 20
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 24,
+              border: "2px solid #333",
+              borderRadius: 8,
+              cursor: "grab",
+              backgroundColor: dragged === v ? "#f0f0f0" : "#fff",
             }}
           >
             {v}
-          </button>
+          </div>
         ))}
       </div>
 
-      <div style={{ fontSize: 24, minHeight: 40 }}>
-        {currentPair.join("") || "—"}
+      {/* Persistent drop box */}
+      <div
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={handleDrop}
+        style={{
+          minHeight: 80,
+          width: "100%",
+          border: "2px dashed #333",
+          borderRadius: 8,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 24,
+          marginBottom: 10,
+          backgroundColor: "#fafafa",
+        }}
+      >
+        {firstVowel ? firstVowel + (dragged || "") : "Drop vowels here"}
       </div>
 
-      <div>{feedback}</div>
+      {/* Feedback */}
+      <div style={{ minHeight: 30, fontSize: 18 }}>{feedback}</div>
 
-      <div style={{ marginTop: 20 }}>
-        <strong>Found:</strong>{" "}
-        {found.join(" ")}
+      {/* Found diphthongs */}
+      <div style={{ marginTop: 10 }}>
+        <strong>Found:</strong> {found.join(" ")}
       </div>
 
-      {found.length === TRUE_DIPHTHONGS.length && (
-        <div style={{ marginTop: 20, color: "green" }}>
+      {found.length === 8 && (
+        <div style={{ color: "green", marginTop: 10 }}>
           🎉 All diphthongs found!
         </div>
       )}
