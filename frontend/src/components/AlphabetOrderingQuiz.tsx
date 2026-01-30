@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { checkAnswer } from "../api"; // adjust path if needed
+import { checkAnswer, fetchCorrectAnswers } from "../api";
 
 interface AlphabetOrderingQuizBlock {
   type: "alphabetQuiz";
@@ -15,7 +15,7 @@ interface Props {
 
 interface QuizItem {
   letter: string;
-  position: number;
+  position: number;     // correct position (1-based)
   userAnswer: string;
   feedback?: boolean;
 }
@@ -34,7 +34,11 @@ const AlphabetOrderingQuiz: React.FC<Props> = ({ lessonId, block }) => {
       const r = Math.floor(Math.random() * block.letters.length);
       if (!usedIndexes.includes(r)) {
         usedIndexes.push(r);
-        selected.push({ letter: block.letters[r], position: r + 1, userAnswer: "" });
+        selected.push({
+          letter: block.letters[r],
+          position: r + 1, // correct position
+          userAnswer: "",
+        });
       }
     }
 
@@ -50,7 +54,7 @@ const AlphabetOrderingQuiz: React.FC<Props> = ({ lessonId, block }) => {
     });
   };
 
-  // ✅ Check answers via backend
+  // Check answers securely via backend
   const handleCheck = async () => {
     setLoading(true);
     const newItems = [...items];
@@ -63,9 +67,10 @@ const AlphabetOrderingQuiz: React.FC<Props> = ({ lessonId, block }) => {
         const res = await checkAnswer({
           lessonId,
           blockType: "alphabetQuiz",
-          questionId: item.letter, // send the actual letter, not index
+          questionId: item.letter,
           answer: item.userAnswer,
         });
+
         newItems[i].feedback = res.correct;
       } catch (err) {
         console.error("Check answer failed:", err);
@@ -77,15 +82,24 @@ const AlphabetOrderingQuiz: React.FC<Props> = ({ lessonId, block }) => {
     setLoading(false);
   };
 
-  const handleShow = () => {
-    setItems(prev =>
-      prev.map(i => ({
-        ...i,
-        userAnswer: i.position.toString(),
-        feedback: true,
-      }))
-    );
-    setChecked(true);
+  // ⭐ Secure Show Answers — fetch correct ordering from backend
+  const handleShow = async () => {
+    try {
+      const res = await fetchCorrectAnswers(lessonId);
+      const correctMap = res.answers.alphabetQuiz || {};
+
+      setItems(prev =>
+        prev.map(i => ({
+          ...i,
+          userAnswer: correctMap[i.letter]?.toString() || "",
+          feedback: true,
+        }))
+      );
+
+      setChecked(true);
+    } catch (err) {
+      console.error("Failed to fetch correct answers:", err);
+    }
   };
 
   const handleClear = () => {
@@ -105,6 +119,7 @@ const AlphabetOrderingQuiz: React.FC<Props> = ({ lessonId, block }) => {
           <span style={{ fontWeight: "bold", marginRight: "0.5rem" }}>
             {idx + 1}. {item.letter}
           </span>
+
           <input
             type="number"
             min={1}
@@ -119,6 +134,7 @@ const AlphabetOrderingQuiz: React.FC<Props> = ({ lessonId, block }) => {
                 : "#ccc",
             }}
           />
+
           {checked && item.feedback !== undefined && (
             <span style={{ marginLeft: "0.5rem" }}>
               {item.feedback ? "✅" : "❌"}
@@ -131,9 +147,11 @@ const AlphabetOrderingQuiz: React.FC<Props> = ({ lessonId, block }) => {
         <button onClick={handleCheck} disabled={loading}>
           {loading ? "Checking..." : "Check Answers"}
         </button>
+
         <button onClick={handleShow} style={{ marginLeft: "0.5rem" }}>
           Show Answers
         </button>
+
         <button onClick={handleClear} style={{ marginLeft: "0.5rem" }}>
           Clear
         </button>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { checkAnswer } from "../api"; // adjust path if needed
+import { checkAnswer, fetchCorrectAnswers } from "../api";
 
 export interface AlphabetNamingBlock {
   type: "alphabetNaming";
@@ -16,7 +16,6 @@ interface ItemState {
   letter: string;
   options: string[];
   userAnswer: string;
-  correctAnswer: string;
   feedback?: boolean;
 }
 
@@ -27,6 +26,7 @@ const AlphabetNamingQuiz: React.FC<Props> = ({ lessonId, block }) => {
   const [checked, setChecked] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Load quiz items (but NOT correct answers)
   useEffect(() => {
     if (!block.rows || block.rows.length === 0) return;
 
@@ -36,13 +36,13 @@ const AlphabetNamingQuiz: React.FC<Props> = ({ lessonId, block }) => {
     const allNames = block.rows.map(r => r[1]).filter(Boolean);
 
     const quizItems: ItemState[] = selectedRows.map(row => {
-      const correctAnswer = row[1].trim();
-      const wrongOptions = shuffle(allNames.filter(n => n !== correctAnswer)).slice(0, 3);
+      const correct = row[1].trim();
+      const wrongOptions = shuffle(allNames.filter(n => n !== correct)).slice(0, 3);
+
       return {
         letter: row[0].trim(),
-        options: shuffle([correctAnswer, ...wrongOptions]),
+        options: shuffle([correct, ...wrongOptions]),
         userAnswer: "",
-        correctAnswer,
       };
     });
 
@@ -70,9 +70,10 @@ const AlphabetNamingQuiz: React.FC<Props> = ({ lessonId, block }) => {
         const res = await checkAnswer({
           lessonId,
           blockType: "alphabetNaming",
-          questionId: item.letter,      // ✅ send the actual letter, not index
-          answer: item.userAnswer.trim() // ✅ trim whitespace
+          questionId: item.letter,
+          answer: item.userAnswer.trim(),
         });
+
         newItems[i].feedback = res.correct;
       } catch (err) {
         console.error("Check answer failed:", err);
@@ -84,11 +85,24 @@ const AlphabetNamingQuiz: React.FC<Props> = ({ lessonId, block }) => {
     setLoading(false);
   };
 
-  const handleShow = () => {
-    setItems(prev =>
-      prev.map(i => ({ ...i, userAnswer: i.correctAnswer, feedback: true }))
-    );
-    setChecked(true);
+  // ⭐ Secure Show Answers — fetch correct answers from backend
+  const handleShow = async () => {
+    try {
+      const res = await fetchCorrectAnswers(lessonId);
+      const correctMap = res.answers.alphabetNaming || {};
+
+      setItems(prev =>
+        prev.map(i => ({
+          ...i,
+          userAnswer: correctMap[i.letter], // backend-provided correct answer
+          feedback: true,
+        }))
+      );
+
+      setChecked(true);
+    } catch (err) {
+      console.error("Failed to fetch correct answers:", err);
+    }
   };
 
   const handleClear = () => {
@@ -101,12 +115,14 @@ const AlphabetNamingQuiz: React.FC<Props> = ({ lessonId, block }) => {
   return (
     <section>
       <h3>Alphabet Naming Quiz</h3>
+
       {items.map((item, idx) => (
         <div key={idx}>
           <p>
             {idx + 1}. {item.letter}{" "}
             {item.feedback !== undefined && (item.feedback ? "✅" : "❌")}
           </p>
+
           {item.options.map(opt => (
             <label key={opt} style={{ display: "block" }}>
               <input
@@ -126,9 +142,11 @@ const AlphabetNamingQuiz: React.FC<Props> = ({ lessonId, block }) => {
         <button onClick={handleCheck} disabled={loading}>
           {loading ? "Checking..." : "Check Answers"}
         </button>
+
         <button onClick={handleShow} style={{ marginLeft: "0.5rem" }}>
           Show Answers
         </button>
+
         <button onClick={handleClear} style={{ marginLeft: "0.5rem" }}>
           Clear
         </button>

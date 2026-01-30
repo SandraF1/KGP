@@ -6,14 +6,12 @@ import express from "express";
 import cors from "cors";
 import fs from "fs/promises";
 
-// Fix __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = 5000;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
@@ -47,7 +45,7 @@ app.get("/api/units", async (req, res) => {
   }
 });
 
-// 2️⃣ Get lesson content by ID
+// 2️⃣ Get lesson content by ID (correct answers removed)
 app.get("/api/lessons/:id", async (req, res) => {
   try {
     const lessonId = req.params.id;
@@ -55,13 +53,23 @@ app.get("/api/lessons/:id", async (req, res) => {
     const lesson = await readJSON(lessonFile);
     if (!lesson) return res.status(404).json({ error: "Lesson not found" });
 
-    // Remove correct answers before sending to frontend
     if (lesson.content) {
       lesson.content = lesson.content.map(block => {
-        if (block.type === "alphabetNaming") return { ...block, rows: block.rows };
-        if (block.type === "alphabetQuiz") return { ...block, letters: block.letters };
+        if (block.type === "alphabetNaming")
+          return { ...block, rows: block.rows };
+
+        if (block.type === "alphabetQuiz")
+          return { ...block, letters: block.letters };
+
         if (block.type === "tf")
-          return { ...block, questions: block.questions.map(q => ({ id: q.id, text: q.text })) };
+          return {
+            ...block,
+            questions: block.questions.map(q => ({
+              id: q.id,
+              text: q.text
+            }))
+          };
+
         return block;
       });
     }
@@ -73,7 +81,7 @@ app.get("/api/lessons/:id", async (req, res) => {
   }
 });
 
-// 3️⃣ Check answer
+// 3️⃣ Check answer (secure)
 app.post("/api/check-answer", async (req, res) => {
   try {
     const { lessonId, blockType, questionId, answer } = req.body;
@@ -92,7 +100,6 @@ app.post("/api/check-answer", async (req, res) => {
         const namingBlock = lesson.content.find(b => b.type === "alphabetNaming");
         if (!namingBlock) return res.status(404).json({ error: "Quiz not found" });
 
-        // Use index or letter as ID consistently, trim strings
         const row = namingBlock.rows.find(r => r[0].trim() === String(questionId).trim());
         if (!row) return res.status(404).json({ error: "Question not found" });
 
@@ -131,6 +138,49 @@ app.post("/api/check-answer", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to check answer" });
+  }
+});
+
+// 4️⃣ Show correct answers (secure, supports ALL quiz types)
+app.post("/api/show-answers", async (req, res) => {
+  try {
+    const { lessonId } = req.body;
+    if (!lessonId) return res.status(400).json({ error: "Missing lessonId" });
+
+    const lessonFile = path.join(__dirname, "data/lessons", `${lessonId}.json`);
+    const lesson = await readJSON(lessonFile);
+    if (!lesson) return res.status(404).json({ error: "Lesson not found" });
+
+    const answers = {};
+
+    for (const block of lesson.content) {
+      if (block.type === "tf") {
+        answers.tf = {};
+        block.questions.forEach(q => {
+          answers.tf[q.id] = q.correct;
+        });
+      }
+
+      if (block.type === "alphabetNaming") {
+        answers.alphabetNaming = {};
+        block.rows.forEach(row => {
+          answers.alphabetNaming[row[0]] = row[1];
+        });
+      }
+
+      if (block.type === "alphabetQuiz") {
+        answers.alphabetQuiz = {};
+        block.letters.forEach((letter, index) => {
+          answers.alphabetQuiz[letter] = index + 1;
+        });
+      }
+    }
+
+    res.json({ answers });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch correct answers" });
   }
 });
 

@@ -4,7 +4,7 @@ export interface LessonData {
   id: string;
   title: string;
   text: string;
-  content?: any[]; // blocks: paragraphs, quizzes, etc.
+  content?: any[]; // paragraphs, TF blocks, alphabet quizzes, etc.
 }
 
 export interface UnitData {
@@ -41,7 +41,7 @@ export interface CheckAnswerParams {
   lessonId: string;
   blockType: BlockType;
   questionId: string | number; // letter for alphabet quizzes, id for TF
-  answer: string | boolean;
+  answer: string | boolean | number;
 }
 
 export interface CheckAnswerResult {
@@ -55,7 +55,7 @@ export async function checkAnswer(params: CheckAnswerParams): Promise<CheckAnswe
     body: JSON.stringify({
       lessonId: params.lessonId,
       blockType: params.blockType,
-      questionId: params.questionId.toString(), // convert IDs to string to match backend
+      questionId: params.questionId.toString(),
       answer: params.answer,
     }),
   });
@@ -63,6 +63,32 @@ export async function checkAnswer(params: CheckAnswerParams): Promise<CheckAnswe
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`Failed to check answer: ${res.status} ${res.statusText} - ${text}`);
+  }
+
+  return res.json();
+}
+
+// ---------------------------
+// Securely fetch correct answers for ALL quiz types
+// ---------------------------
+export interface ShowAnswersResponse {
+  answers: {
+    tf?: Record<string, boolean>;
+    alphabetNaming?: Record<string, string>;
+    alphabetQuiz?: Record<string, number>;
+  };
+}
+
+export async function fetchCorrectAnswers(lessonId: string): Promise<ShowAnswersResponse> {
+  const res = await fetch(`${BASE_URL}/show-answers`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lessonId }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to fetch correct answers: ${res.status} ${res.statusText} - ${text}`);
   }
 
   return res.json();

@@ -1,7 +1,7 @@
 // src/components/TFQuiz.tsx
 import React, { useState } from "react";
 import { TFBlock } from "../types/LessonData";
-import { checkAnswer } from "../api";
+import { checkAnswer, fetchCorrectAnswers } from "../api";
 
 interface Props {
   lessonId: string;
@@ -9,17 +9,13 @@ interface Props {
 }
 
 const TFQuiz: React.FC<Props> = ({ lessonId, block }) => {
-  // Normalize questions so correct is always boolean
+  // Normalize incoming questions (correct is stripped by backend)
   const normalizedQuestions = block.questions.map((q) => ({
-    ...q,
-    correct: Boolean(q.correct),
+    id: q.id,
+    text: q.text,
   }));
-console.log("RAW QUESTIONS:", block.questions);
-console.log("NORMALIZED:", normalizedQuestions);
 
-
-
-  // Answers: true / false / null (unanswered)
+  // Answers: true / false / null
   const [answers, setAnswers] = useState<Record<string, boolean | null>>(
     () =>
       Object.fromEntries(
@@ -31,7 +27,7 @@ console.log("NORMALIZED:", normalizedQuestions);
   const [feedback, setFeedback] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(false);
 
-  // mode: none = nothing, check = show correct/incorrect for answered, show = show all correct answers
+  // none = nothing, check = show correct/incorrect, show = show all correct answers
   const [mode, setMode] = useState<"none" | "check" | "show">("none");
 
   const handleChange = (id: number, value: boolean) => {
@@ -47,7 +43,7 @@ console.log("NORMALIZED:", normalizedQuestions);
       const idStr = q.id.toString();
       const userAnswer = answers[idStr];
 
-      if (userAnswer === null) continue; // skip unanswered
+      if (userAnswer === null) continue;
 
       try {
         const res = await checkAnswer({
@@ -68,24 +64,34 @@ console.log("NORMALIZED:", normalizedQuestions);
     setLoading(false);
   };
 
-  const handleShow = () => {
-    const correctAnswers: Record<string, boolean> = {};
-    const fb: Record<string, boolean> = {};
+  // ⭐ Secure Show Answers — fetch correct answers from backend
+  const handleShow = async () => {
+    try {
+      const res = await fetchCorrectAnswers(lessonId);
+      const correctMap = res.answers.tf || {};
 
-    normalizedQuestions.forEach((q) => {
-      const idStr = q.id.toString();
-      correctAnswers[idStr] = q.correct; // set the correct choice
-      fb[idStr] = true; // show green tick for each
-    });
+      const correctAnswers: Record<string, boolean> = {};
+      const fb: Record<string, boolean> = {};
 
-    setAnswers(correctAnswers);
-    setFeedback(fb);
-    setMode("show");
+      normalizedQuestions.forEach((q) => {
+        const idStr = q.id.toString();
+        correctAnswers[idStr] = correctMap[idStr];
+        fb[idStr] = true;
+      });
+
+      setAnswers(correctAnswers);
+      setFeedback(fb);
+      setMode("show");
+    } catch (err) {
+      console.error("Failed to fetch correct answers:", err);
+    }
   };
 
   const handleClear = () => {
     setAnswers(
-      Object.fromEntries(normalizedQuestions.map((q) => [q.id.toString(), null]))
+      Object.fromEntries(
+        normalizedQuestions.map((q) => [q.id.toString(), null])
+      )
     );
     setFeedback({});
     setMode("none");
@@ -118,7 +124,7 @@ console.log("NORMALIZED:", normalizedQuestions);
               <input
                 type="radio"
                 name={`tf-${idStr}`}
-                checked={answerValue === true} // strict check
+                checked={answerValue === true}
                 onChange={() => handleChange(q.id, true)}
               />{" "}
               True
@@ -128,7 +134,7 @@ console.log("NORMALIZED:", normalizedQuestions);
               <input
                 type="radio"
                 name={`tf-${idStr}`}
-                checked={answerValue === false} // strict check
+                checked={answerValue === false}
                 onChange={() => handleChange(q.id, false)}
               />{" "}
               False
@@ -141,9 +147,11 @@ console.log("NORMALIZED:", normalizedQuestions);
         <button onClick={handleCheck} disabled={loading}>
           {loading ? "Checking..." : "Check Answers"}
         </button>
+
         <button onClick={handleShow} style={{ marginLeft: "0.5rem" }}>
           Show Answers
         </button>
+
         <button onClick={handleClear} style={{ marginLeft: "0.5rem" }}>
           Clear
         </button>
