@@ -57,6 +57,7 @@ export interface AlphabetNamingBlock {
 }
 
 // --- Alphabet Quiz Block ---
+// --- Alphabet Quiz Block ---
 export interface AlphabetQuizRow {
   letter: string;
   position: number;
@@ -64,11 +65,11 @@ export interface AlphabetQuizRow {
 
 export interface AlphabetQuizBlock {
   type: "alphabetQuiz";
-  letters: string[];
+  letters: AlphabetQuizRow[];   // ✅ FIXED
   numItems: number;
   instructions?: string;
-  rows?: AlphabetQuizRow[]; // optional if prefilled
 }
+
 
 // --- True / False Block ---
 export interface TFQuestion {

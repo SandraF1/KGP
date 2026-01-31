@@ -4,21 +4,45 @@
   "content": [
     {
       "type": "paragraph",
-      "text": "The Greek alphabet consists of 24 letters, each with a fixed order."
+      "text": "The Greek alphabet consists of 24 letters, each with a fixed order.",
+      "block_order": 0
     },
     {
       "type": "paragraph",
-      "text": "In this exercise, you will practice typing the correct number for each letter according to its position in the alphabet. Hint: Alpha = 1, Beta = 2, Gamma = 3, etc."
+      "text": "In this exercise, you will practice typing the correct number for each letter according to its position in the alphabet. Hint: Alpha = 1, Beta = 2, Gamma = 3, etc.",
+      "block_order": 1
     },
     {
       "type": "alphabetQuiz",
       "letters": [
-        "α", "β", "γ", "δ", "ε", "ζ", "η", "θ",
-        "ι", "κ", "λ", "μ", "ν", "ξ", "ο", "π",
-        "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω"
+        { "letter": "α", "position": 1 },
+        { "letter": "β", "position": 2 },
+        { "letter": "γ", "position": 3 },
+        { "letter": "δ", "position": 4 },
+        { "letter": "ε", "position": 5 },
+        { "letter": "ζ", "position": 6 },
+        { "letter": "η", "position": 7 },
+        { "letter": "θ", "position": 8 },
+        { "letter": "ι", "position": 9 },
+        { "letter": "κ", "position": 10 },
+        { "letter": "λ", "position": 11 },
+        { "letter": "μ", "position": 12 },
+        { "letter": "ν", "position": 13 },
+        { "letter": "ξ", "position": 14 },
+        { "letter": "ο", "position": 15 },
+        { "letter": "π", "position": 16 },
+        { "letter": "ρ", "position": 17 },
+        { "letter": "σ", "position": 18 },
+        { "letter": "τ", "position": 19 },
+        { "letter": "υ", "position": 20 },
+        { "letter": "φ", "position": 21 },
+        { "letter": "χ", "position": 22 },
+        { "letter": "ψ", "position": 23 },
+        { "letter": "ω", "position": 24 }
       ],
       "numItems": 7,
-      "instructions": "Type the correct position number for each letter."
+      "instructions": "Type the correct position number for each letter.",
+      "block_order": 2
     }
   ]
 }

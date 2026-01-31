@@ -13,6 +13,11 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = 5000;
 
+/*logCheck*/
+console.log("Backend using DB at:", path.join(__dirname, "db/quiz.db"));
+console.log("Server file loaded");
+
+
 // ---------------------------
 // Middleware
 // ---------------------------
@@ -59,9 +64,12 @@ app.get("/api/units", async (req, res) => {
 });
 
 // 2️⃣ Get lesson content by ID (JSON + DB merge)
-app.get("/api/lessons/:id", async (req, res) => {
+app.get("/api/lesson/:lessonId", async (req, res) => {
+  console.log("Lesson endpoint hit:", req.params.lessonId);
+
   try {
-    const lessonId = req.params.id;
+    const lessonId = req.params.lessonId;
+
 
     // JSON paragraphs
     const lessonFile = path.join(__dirname, "data/lessons", `${lessonId}.json`);
@@ -69,9 +77,20 @@ app.get("/api/lessons/:id", async (req, res) => {
     if (!lessonJSON) return res.status(404).json({ error: "Lesson not found" });
 
     // Paragraph blocks with block_order
-    const paragraphBlocks = lessonJSON.content
+    // Only allow non-interactive text blocks from JSON
+    // ---------------------------------------------
+    // FILTER JSON → KEEP ONLY TEXT BLOCKS
+    // ---------------------------------------------
+    // Interactive blocks (alphabetQuiz, tf, diphthongDragDrop, alphabetNaming)
+    // MUST be ignored here because they come from the DB.
+    // JSON interactive blocks are used ONLY for seeding, not runtime.
+    const TEXT_BLOCK_TYPES = ["paragraph", "example", "table"];
+
+    const textBlocks = lessonJSON.content
       .map((block, index) =>
-        block.type === "paragraph" ? { ...block, block_order: index } : null,
+        TEXT_BLOCK_TYPES.includes(block.type)
+          ? { ...block, block_order: index }
+          : null,
       )
       .filter(Boolean);
 
@@ -141,7 +160,7 @@ app.get("/api/lessons/:id", async (req, res) => {
     });
 
     // Merge paragraphs + interactive blocks and sort
-    const mergedContent = [...paragraphBlocks, ...mergedInteractive].sort(
+    const mergedContent = [...textBlocks, ...mergedInteractive].sort(
       (a, b) => a.block_order - b.block_order,
     );
 
@@ -190,6 +209,11 @@ app.post("/api/check-answer", (req, res) => {
       }
 
       case "alphabetQuiz": {
+        /* logCheck*/
+
+        console.log("Loading alphabetQuiz rows for block", block.id);
+        console.log(db.prepare("SELECT * FROM alphabet_quiz_row").all());
+
         const letters = db
           .prepare(
             `
@@ -277,9 +301,16 @@ app.post("/api/show-answers", (req, res) => {
       )
       .all(lessonId);
 
+    /* logCheck*/
+    console.log("Blocks array:", blocks);
+
     const answers = {};
 
     blocks.forEach((block) => {
+      /*logCheck*/
+
+      console.log("Block from DB:", block);
+
       switch (block.block_type) {
         case "alphabetNaming":
           const an = db

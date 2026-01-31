@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { checkAnswer, fetchCorrectAnswers } from "../api";
 
 interface AlphabetOrderingQuizBlock {
+  id?: string;
   type: "alphabetQuiz";
-  letters: string[];          // letters from backend
+  letters: { letter: string; position: number }[]; // updated shape
   numItems: number;
   instructions?: string;
 }
@@ -15,39 +16,39 @@ interface Props {
 
 interface QuizItem {
   letter: string;
-  position: number;     // correct position from backend
+  position: number; // correct position from backend
   userAnswer: string;
   feedback?: boolean;
 }
 
 const AlphabetOrderingQuiz: React.FC<Props> = ({ lessonId, block }) => {
-  const [items, setItems] = useState<QuizItem[]>([]);
+  // Initialize quiz items once
+const [items, setItems] = useState<QuizItem[]>(() => {
+  if (!block.letters || block.letters.length === 0) return [];
+
+  // 1️⃣ Shuffle all letters
+  const shuffled = [...block.letters].sort(() => Math.random() - 0.5);
+
+  // 2️⃣ Take only numItems (default to 7)
+  const count = block.numItems ?? 7;
+
+  const selected = shuffled.slice(0, count).map(l => ({
+    letter: l.letter,
+    position: l.position,
+    userAnswer: "",
+  }));
+
+  console.log("🚀 AlphabetOrderingQuiz initialized items:", selected);
+  return selected;
+});
+
+
   const [checked, setChecked] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!block.letters || block.letters.length === 0) return;
-
-    // select random letters for quiz
-    const available = block.letters.filter(l => l); // remove undefined
-    const selected: QuizItem[] = [];
-    const usedIndexes: number[] = [];
-
-    while (selected.length < Math.min(block.numItems, available.length)) {
-      const r = Math.floor(Math.random() * available.length);
-      if (!usedIndexes.includes(r)) {
-        usedIndexes.push(r);
-        selected.push({
-          letter: available[r],
-          position: r + 1,  // temporary, will be replaced by backend check
-          userAnswer: "",
-        });
-      }
-    }
-
-    setItems(selected);
-    setChecked(false);
-  }, [block]);
+    console.log("🚀 AlphabetOrderingQuiz mounted", lessonId, block.id, items);
+  }, []);
 
   const handleChange = (idx: number, value: string) => {
     setItems(prev => {
@@ -76,6 +77,7 @@ const AlphabetOrderingQuiz: React.FC<Props> = ({ lessonId, block }) => {
         newItems[i].feedback = res.correct;
       } catch (err) {
         console.error("Check answer failed:", err);
+        newItems[i].feedback = false;
       }
     }
 
@@ -85,6 +87,7 @@ const AlphabetOrderingQuiz: React.FC<Props> = ({ lessonId, block }) => {
   };
 
   const handleShow = async () => {
+    setLoading(true);
     try {
       const res = await fetchCorrectAnswers(lessonId);
       const correctMap: Record<string, number> = res.answers.alphabetQuiz || {};
@@ -101,6 +104,7 @@ const AlphabetOrderingQuiz: React.FC<Props> = ({ lessonId, block }) => {
     } catch (err) {
       console.error("Failed to fetch correct answers:", err);
     }
+    setLoading(false);
   };
 
   const handleClear = () => {
@@ -116,7 +120,7 @@ const AlphabetOrderingQuiz: React.FC<Props> = ({ lessonId, block }) => {
       {block.instructions && <p>{block.instructions}</p>}
 
       {items.map((item, idx) => (
-        <div key={idx} style={{ marginBottom: "0.5rem" }}>
+        <div key={item.letter} style={{ marginBottom: "0.5rem" }}>
           <span style={{ fontWeight: "bold", marginRight: "0.5rem" }}>
             {idx + 1}. {item.letter}
           </span>
@@ -149,7 +153,7 @@ const AlphabetOrderingQuiz: React.FC<Props> = ({ lessonId, block }) => {
           {loading ? "Checking..." : "Check Answers"}
         </button>
 
-        <button onClick={handleShow} style={{ marginLeft: "0.5rem" }}>
+        <button onClick={handleShow} style={{ marginLeft: "0.5rem" }} disabled={loading}>
           Show Answers
         </button>
 

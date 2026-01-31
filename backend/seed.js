@@ -73,6 +73,9 @@ const lessonsFolder = path.join(__dirname, "data/lessons");
 const files = fs.readdirSync(lessonsFolder).filter((f) => f.endsWith(".json"));
 
 files.forEach((file) => {
+  /*log*/
+  console.log("Found lesson file:", file);
+
   const lessonJSON = JSON.parse(
     fs.readFileSync(path.join(lessonsFolder, file), "utf8"),
   );
@@ -108,7 +111,7 @@ files.forEach((file) => {
 
     const result = db
       .prepare(
-        "INSERT OR IGNORE INTO content_block (lesson_id, block_type, block_order, instruction) VALUES (?, ?, ?, ?)",
+        "INSERT INTO content_block (lesson_id, block_type, block_order, instruction) VALUES (?, ?, ?, ?)",
       )
       .run(lessonJSON.id, block.type, index, instructionTextForBlock);
 
@@ -126,12 +129,20 @@ files.forEach((file) => {
         break;
 
       case "alphabetQuiz":
+        /*logCheck*/
+
+        console.log("alphabetQuiz block:", block);
+        console.log("letters:", block.letters);
+
         const stmtAQ = db.prepare(
           "INSERT OR IGNORE INTO alphabet_quiz_row (content_block_id, letter, position) VALUES (?, ?, ?)",
         );
-        block.letters?.forEach((letter, i) => {
-          if (letter) stmtAQ.run(blockId, letter, i + 1);
+        block.letters?.forEach((l) => {
+          if (l && l.letter && l.position !== undefined) {
+            stmtAQ.run(blockId, l.letter, l.position);
+          }
         });
+
         break;
 
       case "diphthongDragDrop":

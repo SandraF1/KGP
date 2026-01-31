@@ -12,24 +12,24 @@ interface Props {
 }
 
 const LessonViewer: React.FC<Props> = ({ lesson, onNext, onBack }) => {
-  console.log("LessonViewer lesson:", lesson);
-  console.log("CONTENT BLOCKS:", lesson.content);
-
   return (
     <div>
       <h2>{lesson.title}</h2>
 
-      {(lesson.content || []).map((block: ContentBlock, idx: number) => {
+      {(lesson.content || []).map((block: ContentBlock) => {
+        // Use a stable key for each block
+        const key = `${block.type}-${(block as any).block_order || Math.random()}`;
+
         switch (block.type) {
           case "paragraph":
-            return <p key={idx}>{block.text}</p>;
+            return <p key={key}>{block.text}</p>;
 
           case "example":
-            return <p key={idx}>{block.text}</p>;
+            return <p key={key}>{block.text}</p>;
 
           case "table":
             return (
-              <table key={idx}>
+              <table key={key}>
                 <thead>
                   <tr>
                     {block.headers.map((h) => (
@@ -52,7 +52,7 @@ const LessonViewer: React.FC<Props> = ({ lesson, onNext, onBack }) => {
           case "alphabetQuiz":
             return (
               <AlphabetOrderingQuiz
-                key={idx}
+                key={key}
                 lessonId={lesson.id}
                 block={block}
               />
@@ -61,19 +61,19 @@ const LessonViewer: React.FC<Props> = ({ lesson, onNext, onBack }) => {
           case "alphabetNaming":
             return (
               <AlphabetNamingQuiz
-                key={idx}
+                key={key}
                 lessonId={lesson.id}
                 block={block}
               />
             );
 
           case "tf":
-            return <TFQuiz key={idx} lessonId={lesson.id} block={block} />;
+            return <TFQuiz key={key} lessonId={lesson.id} block={block} />;
 
           case "diphthongDragDrop":
             return (
               <DiphthongDragDrop
-                key={idx}
+                key={key}
                 instructions={block.instructions || ""}
                 lessonId={lesson.id}
               />

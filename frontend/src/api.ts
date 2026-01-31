@@ -28,7 +28,7 @@ export async function fetchUnits(): Promise<UnitData[]> {
 // ---------------------------
 export async function fetchLessonContent(id: string): Promise<LessonData> {
   if (!id) throw new Error("Missing lesson ID");
-  const res = await fetch(`${BASE_URL}/lessons/${id}`);
+  const res = await fetch(`${BASE_URL}/lesson/${id}`);
   if (!res.ok)
     throw new Error(
       `Failed to fetch lesson ${id}: ${res.status} ${res.statusText}`,
