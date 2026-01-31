@@ -9,29 +9,28 @@ interface Props {
 }
 
 const TFQuiz: React.FC<Props> = ({ lessonId, block }) => {
-  // Normalize incoming questions (correct is stripped by backend)
+  // Normalize incoming questions (strip correct answer)
   const normalizedQuestions = block.questions.map((q) => ({
     id: q.id,
     text: q.text,
   }));
 
-  // Answers: true / false / null
+  // User answers: true / false / null
   const [answers, setAnswers] = useState<Record<string, boolean | null>>(
     () =>
-      Object.fromEntries(
-        normalizedQuestions.map((q) => [q.id.toString(), null])
-      )
+      Object.fromEntries(normalizedQuestions.map((q) => [q.id.toString(), null]))
   );
 
-  // Feedback after check
+  // Feedback after checking answers
   const [feedback, setFeedback] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(false);
 
-  // none = nothing, check = show correct/incorrect, show = show all correct answers
+  // Mode: "none" = not checked, "check" = show correct/incorrect, "show" = show all correct
   const [mode, setMode] = useState<"none" | "check" | "show">("none");
 
   const handleChange = (id: number, value: boolean) => {
     const idStr = id.toString();
+    if (mode === "show") return; // disable changes when showing answers
     setAnswers((prev) => ({ ...prev, [idStr]: value }));
   };
 
@@ -52,9 +51,10 @@ const TFQuiz: React.FC<Props> = ({ lessonId, block }) => {
           questionId: idStr,
           answer: userAnswer,
         });
-        newFeedback[idStr] = res.correct;
+
+        newFeedback[idStr] = !!res.correct; // force boolean
       } catch (err) {
-        console.error("Failed to check answer", err);
+        console.error("Failed to check answer:", err);
         newFeedback[idStr] = false;
       }
     }
@@ -64,7 +64,7 @@ const TFQuiz: React.FC<Props> = ({ lessonId, block }) => {
     setLoading(false);
   };
 
-  // ⭐ Secure Show Answers — fetch correct answers from backend
+  // Show correct answers securely from backend
   const handleShow = async () => {
     try {
       const res = await fetchCorrectAnswers(lessonId);
@@ -75,8 +75,8 @@ const TFQuiz: React.FC<Props> = ({ lessonId, block }) => {
 
       normalizedQuestions.forEach((q) => {
         const idStr = q.id.toString();
-        correctAnswers[idStr] = correctMap[idStr];
-        fb[idStr] = true;
+        correctAnswers[idStr] = !!correctMap[idStr]; // convert 0/1 to boolean
+        fb[idStr] = true; // mark feedback as correct
       });
 
       setAnswers(correctAnswers);
@@ -89,9 +89,7 @@ const TFQuiz: React.FC<Props> = ({ lessonId, block }) => {
 
   const handleClear = () => {
     setAnswers(
-      Object.fromEntries(
-        normalizedQuestions.map((q) => [q.id.toString(), null])
-      )
+      Object.fromEntries(normalizedQuestions.map((q) => [q.id.toString(), null]))
     );
     setFeedback({});
     setMode("none");
@@ -125,6 +123,7 @@ const TFQuiz: React.FC<Props> = ({ lessonId, block }) => {
                 type="radio"
                 name={`tf-${idStr}`}
                 checked={answerValue === true}
+                disabled={mode === "show"}
                 onChange={() => handleChange(q.id, true)}
               />{" "}
               True
@@ -135,6 +134,7 @@ const TFQuiz: React.FC<Props> = ({ lessonId, block }) => {
                 type="radio"
                 name={`tf-${idStr}`}
                 checked={answerValue === false}
+                disabled={mode === "show"}
                 onChange={() => handleChange(q.id, false)}
               />{" "}
               False

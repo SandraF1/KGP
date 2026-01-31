@@ -18,26 +18,35 @@ export default function DiphthongDragDrop({ instructions, lessonId }: Props) {
   const handleDrop = async () => {
     if (!dragged) return;
 
-    // If first vowel not yet selected, set it and wait for second
     if (!firstVowel) {
       setFirstVowel(dragged);
-      setDragged(null);
       return;
     }
 
     const pair = firstVowel + dragged;
 
+    // ✅ Only proceed if lessonId and pair are valid
+    if (!lessonId || !pair) {
+      setFeedback("Error: missing data");
+      setTimeout(() => setFeedback(""), 1000);
+      setFirstVowel(null);
+      setDragged(null);
+      return;
+    }
+
     try {
-      const res = await fetch("http://localhost:5000/api/check-diphthong", {
+      const res = await fetch("/api/check-diphthong", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ lessonId, attempt: pair }),
       });
 
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
       const data = await res.json();
 
       if (data.correct && !found.includes(pair)) {
-        setFound([...found, pair]);
+        setFound((prev) => [...prev, pair]);
         setFeedback("✓ Correct");
       } else {
         setFeedback("✗ Not a diphthong");

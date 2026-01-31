@@ -1,158 +1,179 @@
 import React, { useState, useEffect } from "react";
+import { AlphabetNamingBlock, AlphabetNamingRow } from "../types/LessonData";
 import { checkAnswer, fetchCorrectAnswers } from "../api";
-
-export interface AlphabetNamingBlock {
-  type: "alphabetNaming";
-  headers?: string[];
-  rows: string[][];
-}
 
 interface Props {
   lessonId: string;
   block: AlphabetNamingBlock;
 }
 
-interface ItemState {
-  letter: string;
-  options: string[];
-  userAnswer: string;
-  feedback?: boolean;
+interface AnswerState {
+  [symbol: string]: string;
 }
 
-const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => Math.random() - 0.5);
+interface FeedbackState {
+  [symbol: string]: boolean;
+}
 
-const AlphabetNamingQuiz: React.FC<Props> = ({ lessonId, block }) => {
-  const [items, setItems] = useState<ItemState[]>([]);
-  const [checked, setChecked] = useState(false);
+interface OptionsState {
+  [symbol: string]: string[];
+}
+
+export default function AlphabetNamingQuiz({ lessonId, block }: Props) {
+  const [answers, setAnswers] = useState<AnswerState>({});
+  const [feedback, setFeedback] = useState<FeedbackState>({});
+  const [mode, setMode] = useState<"none" | "check" | "show">("none");
   const [loading, setLoading] = useState(false);
+  const [optionsMap, setOptionsMap] = useState<OptionsState>({});
+  const [selectedRows, setSelectedRows] = useState<AlphabetNamingRow[]>([]);
 
-  // Load quiz items (but NOT correct answers)
+  // Initialize quiz
   useEffect(() => {
-    if (!block.rows || block.rows.length === 0) return;
+    const allAnswers = block.rows.map(r => r.answer);
 
-    const shuffledRows = shuffle(block.rows);
-    const selectedRows = shuffledRows.slice(0, Math.min(7, block.rows.length));
+    // Pick 7 random rows
+    const shuffled = [...block.rows].sort(() => Math.random() - 0.5);
+    const chosen = shuffled.slice(0, 7);
+    setSelectedRows(chosen);
 
-    const allNames = block.rows.map(r => r[1]).filter(Boolean);
+    const initAnswers: AnswerState = {};
+    const initFeedback: FeedbackState = {};
+    const initOptions: OptionsState = {};
 
-    const quizItems: ItemState[] = selectedRows.map(row => {
-      const correct = row[1].trim();
-      const wrongOptions = shuffle(allNames.filter(n => n !== correct)).slice(0, 3);
+    chosen.forEach(row => {
+      initAnswers[row.symbol] = "";
+      initFeedback[row.symbol] = false;
 
-      return {
-        letter: row[0].trim(),
-        options: shuffle([correct, ...wrongOptions]),
-        userAnswer: "",
-      };
+      const wrong = allAnswers
+        .filter(a => a !== row.answer)
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 3);
+
+      const opts = [row.answer, ...wrong].sort(() => Math.random() - 0.5);
+      initOptions[row.symbol] = opts;
     });
 
-    setItems(quizItems);
-    setChecked(false);
+    setAnswers(initAnswers);
+    setFeedback(initFeedback);
+    setOptionsMap(initOptions);
+    setMode("none");
   }, [block]);
 
-  const handleAnswer = (idx: number, value: string) => {
-    setItems(prev => {
-      const updated = [...prev];
-      updated[idx].userAnswer = value;
-      return updated;
-    });
+  const handleChange = (symbol: string, value: string) => {
+    setAnswers(prev => ({ ...prev, [symbol]: value }));
   };
 
   const handleCheck = async () => {
     setLoading(true);
-    const newItems = [...items];
+    const newFeedback: FeedbackState = {};
 
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      if (!item.userAnswer) continue;
+    for (const row of selectedRows) {
+      const userAnswer = answers[row.symbol];
+      if (!userAnswer) continue;
 
       try {
         const res = await checkAnswer({
           lessonId,
           blockType: "alphabetNaming",
-          questionId: item.letter,
-          answer: item.userAnswer.trim(),
+          questionId: row.symbol, // correct
+          answer: userAnswer,
         });
 
-        newItems[i].feedback = res.correct;
+        newFeedback[row.symbol] = res.correct;
       } catch (err) {
         console.error("Check answer failed:", err);
+        newFeedback[row.symbol] = false;
       }
     }
 
-    setItems(newItems);
-    setChecked(true);
+    setFeedback(newFeedback);
+    setMode("check");
     setLoading(false);
   };
 
-  // ⭐ Secure Show Answers — fetch correct answers from backend
   const handleShow = async () => {
+    setLoading(true);
     try {
       const res = await fetchCorrectAnswers(lessonId);
       const correctMap = res.answers.alphabetNaming || {};
 
-      setItems(prev =>
-        prev.map(i => ({
-          ...i,
-          userAnswer: correctMap[i.letter], // backend-provided correct answer
-          feedback: true,
-        }))
-      );
+      const newAnswers: AnswerState = {};
+      const newFeedback: FeedbackState = {};
 
-      setChecked(true);
+      selectedRows.forEach(row => {
+        newAnswers[row.symbol] = correctMap[row.symbol] || "";
+        newFeedback[row.symbol] = true;
+      });
+
+      setAnswers(newAnswers);
+      setFeedback(newFeedback);
+      setMode("show");
     } catch (err) {
       console.error("Failed to fetch correct answers:", err);
     }
+    setLoading(false);
   };
 
   const handleClear = () => {
-    setItems(prev =>
-      prev.map(i => ({ ...i, userAnswer: "", feedback: undefined }))
-    );
-    setChecked(false);
+    const cleared: AnswerState = {};
+    const clearedFeedback: FeedbackState = {};
+
+    selectedRows.forEach(row => {
+      cleared[row.symbol] = "";
+      clearedFeedback[row.symbol] = false;
+    });
+
+    setAnswers(cleared);
+    setFeedback(clearedFeedback);
+    setMode("none");
   };
 
   return (
     <section>
-      <h3>Alphabet Naming Quiz</h3>
+      {block.instruction && <h3>{block.instruction}</h3>}
 
-      {items.map((item, idx) => (
-        <div key={idx}>
-          <p>
-            {idx + 1}. {item.letter}{" "}
-            {item.feedback !== undefined && (item.feedback ? "✅" : "❌")}
-          </p>
+      {selectedRows.map(row => {
+        const symbol = row.symbol;
+        const fb = feedback[symbol];
 
-          {item.options.map(opt => (
-            <label key={opt} style={{ display: "block" }}>
-              <input
-                type="radio"
-                name={`alphabet-naming-${idx}`}
-                value={opt}
-                checked={item.userAnswer === opt}
-                onChange={() => handleAnswer(idx, opt)}
-              />
-              {opt}
-            </label>
-          ))}
-        </div>
-      ))}
+        return (
+          <div key={symbol} style={{ marginBottom: 12 }}>
+            <div style={{ fontWeight: "bold", marginBottom: 4 }}>{symbol}</div>
 
-      <div style={{ marginTop: "0.5rem" }}>
+            {optionsMap[symbol]?.map(option => (
+              <label key={option} style={{ display: "block", cursor: "pointer" }}>
+                <input
+                  type="radio"
+                  name={symbol}
+                  value={option}
+                  checked={answers[symbol] === option}
+                  onChange={() => handleChange(symbol, option)}
+                  disabled={mode === "show"}
+                />
+                <span style={{ marginLeft: 6 }}>{option}</span>
+              </label>
+            ))}
+
+            {(mode === "check" || mode === "show") && fb !== undefined && (
+              <span style={{ marginLeft: 8 }}>{fb ? "✅" : "❌"}</span>
+            )}
+          </div>
+        );
+      })}
+
+      <div style={{ marginTop: 12 }}>
         <button onClick={handleCheck} disabled={loading}>
           {loading ? "Checking..." : "Check Answers"}
         </button>
 
-        <button onClick={handleShow} style={{ marginLeft: "0.5rem" }}>
+        <button onClick={handleShow} disabled={loading} style={{ marginLeft: 8 }}>
           Show Answers
         </button>
 
-        <button onClick={handleClear} style={{ marginLeft: "0.5rem" }}>
+        <button onClick={handleClear} style={{ marginLeft: 8 }}>
           Clear
         </button>
       </div>
     </section>
   );
-};
-
-export default AlphabetNamingQuiz;
+}

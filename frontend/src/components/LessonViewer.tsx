@@ -12,6 +12,9 @@ interface Props {
 }
 
 const LessonViewer: React.FC<Props> = ({ lesson, onNext, onBack }) => {
+  console.log("LessonViewer lesson:", lesson);
+  console.log("CONTENT BLOCKS:", lesson.content);
+
   return (
     <div>
       <h2>{lesson.title}</h2>

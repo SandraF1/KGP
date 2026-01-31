@@ -3,8 +3,7 @@
 export interface LessonData {
   id: string;
   title: string;
-  text: string;
-  content?: any[]; // paragraphs, TF blocks, alphabet quizzes, etc.
+  content?: any[];
 }
 
 export interface UnitData {
@@ -19,7 +18,8 @@ const BASE_URL = "http://localhost:5000/api";
 // ---------------------------
 export async function fetchUnits(): Promise<UnitData[]> {
   const res = await fetch(`${BASE_URL}/units`);
-  if (!res.ok) throw new Error(`Failed to fetch units: ${res.statusText}`);
+  if (!res.ok)
+    throw new Error(`Failed to fetch units: ${res.status} ${res.statusText}`);
   return res.json();
 }
 
@@ -27,8 +27,12 @@ export async function fetchUnits(): Promise<UnitData[]> {
 // Fetch lesson content by ID
 // ---------------------------
 export async function fetchLessonContent(id: string): Promise<LessonData> {
+  if (!id) throw new Error("Missing lesson ID");
   const res = await fetch(`${BASE_URL}/lessons/${id}`);
-  if (!res.ok) throw new Error(`Failed to fetch lesson ${id}: ${res.statusText}`);
+  if (!res.ok)
+    throw new Error(
+      `Failed to fetch lesson ${id}: ${res.status} ${res.statusText}`,
+    );
   return res.json();
 }
 
@@ -48,21 +52,34 @@ export interface CheckAnswerResult {
   correct: boolean;
 }
 
-export async function checkAnswer(params: CheckAnswerParams): Promise<CheckAnswerResult> {
+export async function checkAnswer(
+  params: CheckAnswerParams,
+): Promise<CheckAnswerResult> {
+  // Validate parameters before sending
+  const { lessonId, blockType, questionId, answer } = params;
+  if (!lessonId) throw new Error("Missing lessonId");
+  if (!blockType) throw new Error("Missing blockType");
+  if (questionId === undefined || questionId === null)
+    throw new Error("Missing questionId");
+  if (answer === undefined || answer === null)
+    throw new Error("Missing answer");
+
   const res = await fetch(`${BASE_URL}/check-answer`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      lessonId: params.lessonId,
-      blockType: params.blockType,
-      questionId: params.questionId.toString(),
-      answer: params.answer,
+      lessonId,
+      blockType,
+      questionId: questionId.toString(), // ensure string
+      answer,
     }),
   });
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Failed to check answer: ${res.status} ${res.statusText} - ${text}`);
+    throw new Error(
+      `Failed to check answer: ${res.status} ${res.statusText} - ${text}`,
+    );
   }
 
   return res.json();
@@ -79,7 +96,11 @@ export interface ShowAnswersResponse {
   };
 }
 
-export async function fetchCorrectAnswers(lessonId: string): Promise<ShowAnswersResponse> {
+export async function fetchCorrectAnswers(
+  lessonId: string,
+): Promise<ShowAnswersResponse> {
+  if (!lessonId) throw new Error("Missing lessonId");
+
   const res = await fetch(`${BASE_URL}/show-answers`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -88,7 +109,9 @@ export async function fetchCorrectAnswers(lessonId: string): Promise<ShowAnswers
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Failed to fetch correct answers: ${res.status} ${res.statusText} - ${text}`);
+    throw new Error(
+      `Failed to fetch correct answers: ${res.status} ${res.statusText} - ${text}`,
+    );
   }
 
   return res.json();

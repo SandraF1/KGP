@@ -3,7 +3,7 @@ import { checkAnswer, fetchCorrectAnswers } from "../api";
 
 interface AlphabetOrderingQuizBlock {
   type: "alphabetQuiz";
-  letters: string[];
+  letters: string[];          // letters from backend
   numItems: number;
   instructions?: string;
 }
@@ -15,7 +15,7 @@ interface Props {
 
 interface QuizItem {
   letter: string;
-  position: number;     // correct position (1-based)
+  position: number;     // correct position from backend
   userAnswer: string;
   feedback?: boolean;
 }
@@ -25,18 +25,21 @@ const AlphabetOrderingQuiz: React.FC<Props> = ({ lessonId, block }) => {
   const [checked, setChecked] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Select random letters for the quiz
   useEffect(() => {
+    if (!block.letters || block.letters.length === 0) return;
+
+    // select random letters for quiz
+    const available = block.letters.filter(l => l); // remove undefined
     const selected: QuizItem[] = [];
     const usedIndexes: number[] = [];
 
-    while (selected.length < Math.min(block.numItems, block.letters.length)) {
-      const r = Math.floor(Math.random() * block.letters.length);
+    while (selected.length < Math.min(block.numItems, available.length)) {
+      const r = Math.floor(Math.random() * available.length);
       if (!usedIndexes.includes(r)) {
         usedIndexes.push(r);
         selected.push({
-          letter: block.letters[r],
-          position: r + 1, // correct position
+          letter: available[r],
+          position: r + 1,  // temporary, will be replaced by backend check
           userAnswer: "",
         });
       }
@@ -54,7 +57,6 @@ const AlphabetOrderingQuiz: React.FC<Props> = ({ lessonId, block }) => {
     });
   };
 
-  // Check answers securely via backend
   const handleCheck = async () => {
     setLoading(true);
     const newItems = [...items];
@@ -82,11 +84,10 @@ const AlphabetOrderingQuiz: React.FC<Props> = ({ lessonId, block }) => {
     setLoading(false);
   };
 
-  // ⭐ Secure Show Answers — fetch correct ordering from backend
   const handleShow = async () => {
     try {
       const res = await fetchCorrectAnswers(lessonId);
-      const correctMap = res.answers.alphabetQuiz || {};
+      const correctMap: Record<string, number> = res.answers.alphabetQuiz || {};
 
       setItems(prev =>
         prev.map(i => ({

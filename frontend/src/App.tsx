@@ -25,8 +25,16 @@ export default function App() {
   // Load lesson whenever selection changes
   useEffect(() => {
     if (units.length === 0) return;
+
     const lessonId = units[selected.unit].subunits[selected.subunit].id;
-    fetchLessonContent(lessonId).then(setLesson);
+
+    fetchLessonContent(lessonId).then((data) => {
+      setLesson({
+        id: data.id,
+        title: data.title,
+        content: data.content,
+      });
+    });
   }, [units, selected]);
 
   const selectLesson = (unitIndex: number, subIndex: number) => {

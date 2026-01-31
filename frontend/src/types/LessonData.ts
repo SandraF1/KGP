@@ -40,31 +40,53 @@ export interface HiddenTableBlock {
   rows: string[][];
 }
 
-export interface AlphabetQuizBlock {
-  type: "alphabetQuiz";
-  letters: string[];
-  numItems: number;
-  instructions?: string;
+// --- Alphabet Naming Block ---
+export interface AlphabetNamingRow {
+  symbol: string;
+  answer: string;
 }
 
 export interface AlphabetNamingBlock {
   type: "alphabetNaming";
   headers: string[];
-  rows: string[][];
+  rows: {
+    symbol: string;
+    answer: string;
+  }[]; // now each row is an object, not a simple string[]
+  instruction?: string; // optional field for instructions
+}
+
+// --- Alphabet Quiz Block ---
+export interface AlphabetQuizRow {
+  letter: string;
+  position: number;
+}
+
+export interface AlphabetQuizBlock {
+  type: "alphabetQuiz";
+  letters: string[];
+  numItems: number;
+  instructions?: string;
+  rows?: AlphabetQuizRow[]; // optional if prefilled
+}
+
+// --- True / False Block ---
+export interface TFQuestion {
+  id: number;
+  text: string;
+  correct: boolean;
 }
 
 export interface TFBlock {
   type: "tf";
-  questions: {
-    id: number;
-    text: string;
-    correct: boolean;
-  }[];
+  questions: TFQuestion[];
 }
 
+// --- Diphthong Drag & Drop Block ---
 export interface DiphthongDragDropBlock {
   type: "diphthongDragDrop";
   instructions: string;
+  answers?: string[]; // optional, for backend checking
 }
 
 // --- Union of all block types ---
@@ -77,8 +99,6 @@ export type ContentBlock =
   | AlphabetNamingBlock
   | TFBlock
   | DiphthongDragDropBlock;
-
-  
 
 // --- Lesson Data ---
 export interface LessonData {

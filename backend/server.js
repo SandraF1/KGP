@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 import express from "express";
 import cors from "cors";
 import fs from "fs/promises";
+import Database from "better-sqlite3";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,8 +13,16 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = 5000;
 
+// ---------------------------
+// Middleware
+// ---------------------------
 app.use(cors());
 app.use(express.json());
+
+// ---------------------------
+// SQLite connection
+// ---------------------------
+const db = new Database(path.join(__dirname, "db/quiz.db"));
 
 // ---------------------------
 // Helpers
@@ -26,6 +35,10 @@ async function readJSON(filePath) {
     if (err.code === "ENOENT") return null;
     throw err;
   }
+}
+
+function shuffleArray(array) {
+  return array.sort(() => Math.random() - 0.5);
 }
 
 // ---------------------------
@@ -45,52 +58,106 @@ app.get("/api/units", async (req, res) => {
   }
 });
 
-// 2️⃣ Get lesson content by ID (correct answers removed)
+// 2️⃣ Get lesson content by ID (JSON + DB merge)
 app.get("/api/lessons/:id", async (req, res) => {
   try {
     const lessonId = req.params.id;
+
+    // JSON paragraphs
     const lessonFile = path.join(__dirname, "data/lessons", `${lessonId}.json`);
-    const lesson = await readJSON(lessonFile);
-    if (!lesson) return res.status(404).json({ error: "Lesson not found" });
+    const lessonJSON = await readJSON(lessonFile);
+    if (!lessonJSON) return res.status(404).json({ error: "Lesson not found" });
 
-    if (lesson.content) {
-      lesson.content = lesson.content.map((block) => {
-        if (block.type === "alphabetNaming")
-          return { ...block, rows: block.rows };
+    // Paragraph blocks with block_order
+    const paragraphBlocks = lessonJSON.content
+      .map((block, index) =>
+        block.type === "paragraph" ? { ...block, block_order: index } : null,
+      )
+      .filter(Boolean);
 
-        if (block.type === "alphabetQuiz")
-          return { ...block, letters: block.letters };
+    // Fetch interactive blocks from DB
+    const interactiveBlocks = db
+      .prepare(
+        "SELECT * FROM content_block WHERE lesson_id = ? ORDER BY block_order",
+      )
+      .all(lessonId);
 
-        if (block.type === "tf")
-          return {
-            ...block,
-            questions: block.questions.map((q) => ({
-              id: q.id,
-              text: q.text,
-            })),
-          };
+    const mergedInteractive = interactiveBlocks.map((block) => {
+      let result = {
+        block_order: block.block_order,
+        type: block.block_type,
+        instruction: block.instruction || "",
+      };
 
-        if (
-          block.type === "interactive" &&
-          block.activity === "DiphthongDragDrop"
-        ) {
-          // remove the answers array for frontend
-          return { ...block, answers: undefined };
+      switch (block.block_type) {
+        case "alphabetNaming": {
+          const allRows = db
+            .prepare(
+              "SELECT symbol, answer FROM alphabet_naming_row WHERE content_block_id = ?",
+            )
+            .all(block.id);
+
+          result.rows = shuffleArray(allRows).slice(0, 7); // pick 7 random letters
+          break;
         }
 
-        return block;
-      });
-    }
+        case "alphabetQuiz": {
+          const letters = db
+            .prepare(
+              "SELECT letter, position FROM alphabet_quiz_row WHERE content_block_id = ? ORDER BY id",
+            )
+            .all(block.id);
+          result.letters = shuffleArray(letters); // optional shuffle
+          break;
+        }
 
-    res.json(lesson);
+        case "diphthongDragDrop": {
+          const answers = db
+            .prepare(
+              "SELECT answer FROM diphthong_dragdrop_row WHERE content_block_id = ?",
+            )
+            .all(block.id)
+            .map((r) => r.answer);
+          result.answers = answers;
+          break;
+        }
+
+        case "tf": {
+          const questions = db
+            .prepare(
+              "SELECT question_id as id, text, correct FROM tf_question WHERE content_block_id = ? ORDER BY question_id",
+            )
+            .all(block.id)
+            .map((q) => ({ ...q, correct: !!q.correct }));
+          result.questions = questions;
+          break;
+        }
+
+        default:
+          break;
+      }
+
+      return result;
+    });
+
+    // Merge paragraphs + interactive blocks and sort
+    const mergedContent = [...paragraphBlocks, ...mergedInteractive].sort(
+      (a, b) => a.block_order - b.block_order,
+    );
+
+    res.json({
+      id: lessonId,
+      title: lessonJSON.title,
+      content: mergedContent,
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to read lesson data" });
+    res.status(500).json({ error: "Failed to fetch lesson data" });
   }
 });
 
-// 3️⃣ Check standard quiz answer (alphabetNaming, alphabetQuiz, tf)
-app.post("/api/check-answer", async (req, res) => {
+// 3️⃣ Check standard quiz answer
+app.post("/api/check-answer", (req, res) => {
   try {
     const { lessonId, blockType, questionId, answer } = req.body;
     if (
@@ -102,56 +169,62 @@ app.post("/api/check-answer", async (req, res) => {
       return res.status(400).json({ error: "Missing parameters" });
     }
 
-    const lessonFile = path.join(__dirname, "data/lessons", `${lessonId}.json`);
-    const lesson = await readJSON(lessonFile);
-    if (!lesson) return res.status(404).json({ error: "Lesson not found" });
-
     let isCorrect = false;
 
     switch (blockType) {
       case "alphabetNaming": {
-        const namingBlock = lesson.content.find(
-          (b) => b.type === "alphabetNaming",
-        );
-        if (!namingBlock)
-          return res.status(404).json({ error: "Quiz not found" });
+        const row = db
+          .prepare(
+            `
+          SELECT an.answer
+          FROM alphabet_naming_row an
+          JOIN content_block cb ON cb.id = an.content_block_id
+          WHERE cb.lesson_id = ? AND cb.block_type = ? AND an.symbol = ?
+        `,
+          )
+          .get(lessonId, blockType, questionId);
 
-        const row = namingBlock.rows.find(
-          (r) => r[0].trim() === String(questionId).trim(),
-        );
         if (!row) return res.status(404).json({ error: "Question not found" });
-
-        const correctAnswer = row[1].trim();
-        isCorrect = String(answer).trim() === correctAnswer;
+        isCorrect = String(row.answer).trim() === String(answer).trim();
         break;
       }
 
       case "alphabetQuiz": {
-        const orderBlock = lesson.content.find(
-          (b) => b.type === "alphabetQuiz",
-        );
-        if (!orderBlock)
-          return res.status(404).json({ error: "Quiz not found" });
+        const letters = db
+          .prepare(
+            `
+          SELECT letter, position
+          FROM alphabet_quiz_row aq
+          JOIN content_block cb ON cb.id = aq.content_block_id
+          WHERE cb.lesson_id = ? AND cb.block_type = ?
+          ORDER BY aq.id
+        `,
+          )
+          .all(lessonId, blockType);
 
-        const pos = orderBlock.letters.indexOf(String(questionId)) + 1;
-        if (pos === 0)
+        const posObj = letters.find((l) => l.letter === String(questionId));
+        if (!posObj)
           return res.status(404).json({ error: "Question not found" });
 
-        isCorrect = parseInt(answer) === pos;
+        isCorrect = parseInt(answer) === posObj.position;
         break;
       }
 
       case "tf": {
-        const tfBlock = lesson.content.find((b) => b.type === "tf");
-        if (!tfBlock) return res.status(404).json({ error: "Quiz not found" });
+        const tfRow = db
+          .prepare(
+            `
+          SELECT tq.correct
+          FROM tf_question tq
+          JOIN content_block cb ON cb.id = tq.content_block_id
+          WHERE cb.lesson_id = ? AND cb.block_type = ? AND tq.question_id = ?
+        `,
+          )
+          .get(lessonId, blockType, questionId);
 
-        const tfQuestion = tfBlock.questions.find(
-          (q) => q.id.toString() === String(questionId),
-        );
-        if (!tfQuestion)
+        if (!tfRow)
           return res.status(404).json({ error: "Question not found" });
-
-        isCorrect = answer === tfQuestion.correct;
+        isCorrect = !!tfRow.correct === answer;
         break;
       }
 
@@ -166,79 +239,94 @@ app.post("/api/check-answer", async (req, res) => {
   }
 });
 
-// 4️⃣ Check DiphthongDragDrop answers (secure)
-// POST /api/check-diphthong
-// 5️⃣ Check diphthong answer (secure)
-app.post("/api/check-diphthong", async (req, res) => {
+// 4️⃣ Check DiphthongDragDrop answers
+app.post("/api/check-diphthong", (req, res) => {
   try {
     const { lessonId, attempt } = req.body;
-    if (!lessonId || !attempt) {
+    if (!lessonId || !attempt || attempt.trim() === "")
       return res.status(400).json({ error: "Missing parameters" });
-    }
 
-    // Optional: verify lesson exists
-    const lessonFile = path.join(__dirname, "data/lessons", `${lessonId}.json`);
-    const lesson = await readJSON(lessonFile);
-    if (!lesson) return res.status(404).json({ error: "Lesson not found" });
+    const answers = db
+      .prepare(
+        `
+      SELECT ddd.answer
+      FROM diphthong_dragdrop_row ddd
+      JOIN content_block cb ON cb.id = ddd.content_block_id
+      WHERE cb.lesson_id = ? AND cb.block_type = 'diphthongDragDrop'
+    `,
+      )
+      .all(lessonId)
+      .map((r) => r.answer);
 
-    // ✅ Hardcoded correct diphthongs
-    const correctDiphthongs = ["αι", "ει", "οι", "υι", "αυ", "ευ", "ου", "ηυ"];
-
-    const isCorrect = correctDiphthongs.includes(attempt);
-
-    res.json({ correct: isCorrect });
+    res.json({ correct: answers.includes(attempt) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to check diphthong answer" });
   }
 });
 
-// 5️⃣ Show correct answers (secure, supports all quiz types)
-app.post("/api/show-answers", async (req, res) => {
+// 5️⃣ Show correct answers
+app.post("/api/show-answers", (req, res) => {
   try {
     const { lessonId } = req.body;
     if (!lessonId) return res.status(400).json({ error: "Missing lessonId" });
 
-    const lessonFile = path.join(__dirname, "data/lessons", `${lessonId}.json`);
-    const lesson = await readJSON(lessonFile);
-    if (!lesson) return res.status(404).json({ error: "Lesson not found" });
+    const blocks = db
+      .prepare(
+        "SELECT * FROM content_block WHERE lesson_id = ? ORDER BY block_order",
+      )
+      .all(lessonId);
 
     const answers = {};
 
-    for (const block of lesson.content) {
-      if (block.type === "tf") {
-        answers.tf = {};
-        block.questions.forEach((q) => {
-          answers.tf[q.id] = q.correct;
-        });
-      }
+    blocks.forEach((block) => {
+      switch (block.block_type) {
+        case "alphabetNaming":
+          const an = db
+            .prepare(
+              "SELECT symbol, answer FROM alphabet_naming_row WHERE content_block_id = ?",
+            )
+            .all(block.id);
+          answers.alphabetNaming = Object.fromEntries(
+            an.map((r) => [r.symbol, r.answer]),
+          );
+          break;
 
-      if (block.type === "alphabetNaming") {
-        answers.alphabetNaming = {};
-        block.rows.forEach((row) => {
-          answers.alphabetNaming[row[0]] = row[1];
-        });
-      }
+        case "alphabetQuiz":
+          const aq = db
+            .prepare(
+              "SELECT letter, position FROM alphabet_quiz_row WHERE content_block_id = ? ORDER BY id",
+            )
+            .all(block.id);
+          answers.alphabetQuiz = Object.fromEntries(
+            aq.map((r) => [r.letter, r.position]),
+          );
+          break;
 
-      if (block.type === "alphabetQuiz") {
-        answers.alphabetQuiz = {};
-        block.letters.forEach((letter, index) => {
-          answers.alphabetQuiz[letter] = index + 1;
-        });
-      }
+        case "diphthongDragDrop":
+          const dd = db
+            .prepare(
+              "SELECT answer FROM diphthong_dragdrop_row WHERE content_block_id = ?",
+            )
+            .all(block.id);
+          answers.diphthongDragDrop = dd.map((r) => r.answer);
+          break;
 
-      if (
-        block.type === "interactive" &&
-        block.activity === "DiphthongDragDrop"
-      ) {
-        answers.DiphthongDragDrop = block.answers;
+        case "tf":
+          const tf = db
+            .prepare(
+              "SELECT question_id as id, correct FROM tf_question WHERE content_block_id = ?",
+            )
+            .all(block.id);
+          answers.tf = Object.fromEntries(tf.map((r) => [r.id, !!r.correct]));
+          break;
       }
-    }
+    });
 
     res.json({ answers });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to fetch correct answers" });
+    res.status(500).json({ error: "Failed to fetch answers" });
   }
 });
 
