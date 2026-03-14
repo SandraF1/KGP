@@ -26,6 +26,8 @@ export default function App() {
   useEffect(() => {
     if (units.length === 0) return;
 
+    
+
     const lessonId = units[selected.unit].subunits[selected.subunit].id;
 
     fetchLessonContent(lessonId).then((data) => {
@@ -36,6 +38,10 @@ export default function App() {
       });
     });
   }, [units, selected]);
+
+  useEffect(() => {
+  setExpandedUnit(selected.unit);
+}, [selected.unit]);
 
   const selectLesson = (unitIndex: number, subIndex: number) => {
     setSelected({ unit: unitIndex, subunit: subIndex });
@@ -71,7 +77,10 @@ export default function App() {
   if (!lesson) return <div>Loading lesson...</div>;
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <div
+      className="container-fluid"
+      style={{ minHeight: "100vh", display: "flex" }}
+    >
       {/* Sidebar */}
       <Sidebar
         units={units}
@@ -82,21 +91,23 @@ export default function App() {
       />
 
       {/* Lesson Viewer + Navigation */}
-      <div style={{ padding: "1rem", flex: 1 }}>
+
+      <main className="container" style={{ flex: 1, padding: "1rem" }}>
         <LessonViewer lesson={lesson} />
         <div style={{ marginTop: "1rem" }}>
           <button
+            className="primary"
             onClick={goPrev}
             disabled={isFirstLesson}
             style={{ marginRight: "0.5rem" }}
           >
             Previous
           </button>
-          <button onClick={goNext} disabled={isLastLesson}>
+          <button className="primary" onClick={goNext} disabled={isLastLesson}>
             Next
           </button>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
