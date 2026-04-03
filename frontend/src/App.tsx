@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from "react";
+
+import Header from "./components/Header";
+
 import {
   fetchUnits,
   fetchLessonContent,
@@ -77,6 +80,12 @@ export default function App() {
   if (!lesson) return <div>Loading lesson...</div>;
 
   return (
+
+<div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+  
+  {/* Header goes here */}
+  <Header />
+
     <div
       className="container-fluid"
       style={{ minHeight: "100vh", display: "flex" }}
@@ -108,6 +117,7 @@ export default function App() {
           </button>
         </div>
       </main>
+    </div>
     </div>
   );
 }
