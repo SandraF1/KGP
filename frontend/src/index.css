@@ -78,3 +78,9 @@ article {
 h1:first-child {
   margin-top: 0 !important;
 }
+
+html,
+body {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
