@@ -25,7 +25,7 @@ a:hover {
 body {
   margin: 0;
   display: flex;
-  place-items: center;
+
   min-width: 320px;
   min-height: 100vh;
 }
@@ -83,4 +83,53 @@ html,
 body {
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+body > * {
+  min-width: 0;
+}
+
+* {
+  outline: 1px solid red;
+}
+
+.container {
+  background: lightblue;
+}
+
+.container {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 1rem; /* horizontal spacing for text */
+  box-sizing: border-box;
+}
+
+/* All text, markdown, and generic content */
+p,
+li,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+span {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Images and pre/code blocks */
+img,
+pre,
+code {
+  max-width: 100%;
+  display: block;
+  overflow-x: auto; /* scroll if too wide */
+}
+
+.layout {
+  width: 100%;
+  max-width: 100%;
+  padding: 0;
+  margin: 0 auto;
 }

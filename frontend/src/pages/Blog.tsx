@@ -12,7 +12,7 @@ export default function Blog() {
 
       <ul>
         <li>
-          <Link to="/blog/2026-04-04-Welcome">Welcome</Link>
+          <Link to="/blog/2026-04-04-01-Welcome">Welcome</Link>
         </li>
       </ul>
     </Layout>

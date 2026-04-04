@@ -7,11 +7,25 @@ export default function Terms() {
       <h1>Terms & Conditions</h1>
 
       <p>
-        These are placeholder terms. You can replace this text with your actual
-        terms and conditions whenever you're ready.
+        This site and its code are licensed under{" "}
+        <a
+          href="https://creativecommons.org/licenses/by-nc-sa/4.0/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          CC BY-NC-SA 4.0
+        </a>
+        .
       </p>
 
-      <p>By using this site, you agree to the terms outlined here.</p>
+      <p>
+        You may use and adapt the content for personal study, classroom use, or
+        other educational purposes. Please credit “The Koine Greek Project” and
+        link to this site. You may not sell the original or adapted content, and
+        any adaptations must be shared under the same licence.
+      </p>
+
+      <p>By using this site, you agree to these terms.</p>
     </Layout>
   );
 }

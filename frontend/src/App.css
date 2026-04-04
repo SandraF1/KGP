@@ -46,3 +46,18 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
 }
+
+body {
+  margin: 0;
+}
+
+.container {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
+
+img {
+  max-width: 100%;
+}

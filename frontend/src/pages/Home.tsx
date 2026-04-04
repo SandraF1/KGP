@@ -6,14 +6,14 @@ export default function Home() {
     <Layout>
       <h1>Welcome to the Koine Greek Project</h1>
       <p>
-        Explore lessons, learn the language, and dive into the world of Koine
-        Greek.
+        This is a free, comprehensive online learning platform for students of
+        Koine Greek. It features simple explanations, interactive quizzes, and
+        vocabulary flashcards to support your learning. The site also serves as
+        a portfolio showcasing my learning experience design skills, and it will
+        continue to be updated over time.
       </p>
 
-      <p>
-        Use the navigation above to browse lessons, read the blog, or review the
-        terms.
-      </p>
+      <p>Stay tuned for the upcoming mobile app version!</p>
     </Layout>
   );
 }
