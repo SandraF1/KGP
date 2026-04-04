@@ -66,3 +66,15 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* Remove Pico's default top spacing so all pages start at the top */
+main,
+section,
+article {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+h1:first-child {
+  margin-top: 0 !important;
+}

@@ -1,0 +1,20 @@
+import { Link } from "react-router-dom";
+import React from "react";
+import Layout from "../layout/Layout";
+
+export default function Blog() {
+  return (
+    <Layout>
+      <h1>Blog</h1>
+      <p>Welcome to the Koine Greek Project blog.</p>
+
+      <h2>Recent Posts</h2>
+
+      <ul>
+        <li>
+          <Link to="/blog/sample-post">Sample Blog Post</Link>
+        </li>
+      </ul>
+    </Layout>
+  );
+}

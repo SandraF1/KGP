@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-
-import Header from "./components/Header";
+import Layout from "./layout/Layout";
 
 import {
   fetchUnits,
@@ -9,15 +8,15 @@ import {
   LessonData,
   UnitData,
 } from "./api";
+
 import LessonViewer from "./components/LessonViewer";
-import Sidebar from "./components/Sidebar"; // import Sidebar
+import Sidebar from "./components/Sidebar";
 
 export default function App() {
   const [units, setUnits] = useState<UnitData[]>([]);
   const [selected, setSelected] = useState({ unit: 0, subunit: 0 });
   const [lesson, setLesson] = useState<LessonData | null>(null);
 
-  // Sidebar state
   const [expandedUnit, setExpandedUnit] = useState<number | null>(0);
 
   // Load units on mount
@@ -28,8 +27,6 @@ export default function App() {
   // Load lesson whenever selection changes
   useEffect(() => {
     if (units.length === 0) return;
-
-    
 
     const lessonId = units[selected.unit].subunits[selected.subunit].id;
 
@@ -43,8 +40,8 @@ export default function App() {
   }, [units, selected]);
 
   useEffect(() => {
-  setExpandedUnit(selected.unit);
-}, [selected.unit]);
+    setExpandedUnit(selected.unit);
+  }, [selected.unit]);
 
   const selectLesson = (unitIndex: number, subIndex: number) => {
     setSelected({ unit: unitIndex, subunit: subIndex });
@@ -80,44 +77,42 @@ export default function App() {
   if (!lesson) return <div>Loading lesson...</div>;
 
   return (
+    <Layout>
+      <div
+        className="container-fluid"
+        style={{ minHeight: "100vh", display: "flex" }}
+      >
+        {/* Sidebar */}
+        <Sidebar
+          units={units}
+          expandedUnit={expandedUnit}
+          toggleUnit={toggleUnit}
+          selectLesson={selectLesson}
+          selected={selected}
+        />
 
-<div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-  
-  {/* Header goes here */}
-  <Header />
-
-    <div
-      className="container-fluid"
-      style={{ minHeight: "100vh", display: "flex" }}
-    >
-      {/* Sidebar */}
-      <Sidebar
-        units={units}
-        expandedUnit={expandedUnit}
-        toggleUnit={toggleUnit}
-        selectLesson={selectLesson}
-        selected={selected}
-      />
-
-      {/* Lesson Viewer + Navigation */}
-
-      <main className="container" style={{ flex: 1, padding: "1rem" }}>
-        <LessonViewer lesson={lesson} />
-        <div style={{ marginTop: "1rem" }}>
-          <button
-            className="primary"
-            onClick={goPrev}
-            disabled={isFirstLesson}
-            style={{ marginRight: "0.5rem" }}
-          >
-            Previous
-          </button>
-          <button className="primary" onClick={goNext} disabled={isLastLesson}>
-            Next
-          </button>
-        </div>
-      </main>
-    </div>
-    </div>
+        {/* Lesson Viewer + Navigation */}
+        <main className="container" style={{ flex: 1, padding: "1rem" }}>
+          <LessonViewer lesson={lesson} />
+          <div style={{ marginTop: "1rem" }}>
+            <button
+              className="primary"
+              onClick={goPrev}
+              disabled={isFirstLesson}
+              style={{ marginRight: "0.5rem" }}
+            >
+              Previous
+            </button>
+            <button
+              className="primary"
+              onClick={goNext}
+              disabled={isLastLesson}
+            >
+              Next
+            </button>
+          </div>
+        </main>
+      </div>
+    </Layout>
   );
 }
