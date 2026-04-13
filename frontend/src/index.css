@@ -89,13 +89,6 @@ body > * {
   min-width: 0;
 }
 
-* {
-  outline: 1px solid red;
-}
-
-.container {
-  background: lightblue;
-}
 
 .container {
   width: 100%;
